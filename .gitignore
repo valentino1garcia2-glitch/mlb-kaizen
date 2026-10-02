@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+.env
+data/*.sqlite3
+data/cache/
+data/mlb_kaizen_data/
+.agent/backups/
