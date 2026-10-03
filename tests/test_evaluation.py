@@ -1,7 +1,7 @@
 import unittest
 from datetime import UTC, date, datetime, timedelta
 
-from mlb_kaizen.evaluation.calibration import temporal_calibration_report
+from mlb_kaizen.evaluation.calibration import PlattCalibrator, temporal_calibration_report, temporal_platt_calibration_report
 from mlb_kaizen.evaluation.metrics import brier_score, log_loss, calibration_bins
 from mlb_kaizen.evaluation.walk_forward import walk_forward_evaluate
 from mlb_kaizen.training.dataset import HistoricalGameRow, MODEL_FEATURES
@@ -33,6 +33,20 @@ class EvaluationTests(unittest.TestCase):
         report=temporal_calibration_report(probabilities,outcomes,0.6)
         self.assertEqual(report.calibration_size,6)
         self.assertEqual(report.evaluation_size,4)
+
+    def test_platt_calibrator_is_smooth_and_bounded(self):
+        calibrator = PlattCalibrator.fit([0.2, 0.3, 0.7, 0.8], [0, 0, 1, 1])
+        self.assertGreater(calibrator.transform(0.8), calibrator.transform(0.2))
+        self.assertTrue(all(0 <= value <= 1 for value in calibrator.transform_many([0, 0.5, 1])))
+
+    def test_platt_calibrator_rejects_single_class_training_data(self):
+        with self.assertRaises(ValueError):
+            PlattCalibrator.fit([0.2, 0.3], [1, 1])
+
+    def test_temporal_platt_calibration_keeps_the_later_block_separate(self):
+        report = temporal_platt_calibration_report([0.2, 0.3, 0.7, 0.8, 0.25, 0.75], [0, 0, 1, 1, 0, 1], 0.5)
+        self.assertEqual(report.calibration_size, 3)
+        self.assertEqual(report.evaluation_size, 3)
 
     def test_walk_forward_produces_only_post_training_predictions(self):
         summary=walk_forward_evaluate(rows(40), lambda: PoissonTrainer(alpha=0.5), "poisson", min_train_size=20, test_window=5, simulation_count=300)

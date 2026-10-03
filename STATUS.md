@@ -135,7 +135,7 @@ LIVE / SNAPSHOT / MANUAL / HYBRID INPUT
 ## Última verificación
 
 ```text
-113 / 113 PASS
+116 / 116 PASS
 ```
 
 Comando:
@@ -191,6 +191,13 @@ basada en 2025 mejora Brier de 0.2463 a 0.2462 al medir 2026: mejora pequeña,
 todavía no validación de producción. Analyst Mode usa una fórmula fija distinta
 del modelo entrenado; antes de lineups debe cargar un artefacto entrenado de
 forma versionada.
+
+## Selección temporal de calibración — 2026-10-03
+
+Platt superó a la calibración por rangos usando 2024 para ajustar y 2025 para
+elegir el método. Reajustada con 2025 y medida por primera vez en 2026, mejora
+Brier de 0.2463 a 0.2462. Sigue siendo una mejora pequeña y permanece separada
+de Analyst Mode hasta que éste use el modelo entrenado E3.
 
 ## Recuperación después de agotar contexto
 
