@@ -196,8 +196,7 @@ forma versionada.
 
 Analyst Mode ya puede recibir un artefacto local confiable del modelo Poisson
 E3 y un calibrador opcional, conservando la fórmula fija como fallback. La
-salida continúa etiquetada como experimental. Falta exponer esa selección de
-artefactos directamente en el comando de análisis.
+salida continúa etiquetada como experimental.
 
 ## Selección temporal de calibración — 2026-10-03
 
@@ -205,6 +204,15 @@ Platt superó a la calibración por rangos usando 2024 para ajustar y 2025 para
 elegir el método. Reajustada con 2025 y medida por primera vez en 2026, mejora
 Brier de 0.2463 a 0.2462. Sigue siendo una mejora pequeña y permanece separada
 de Analyst Mode hasta que éste use el modelo entrenado E3.
+
+## Modelo entrenado desde el comando — 2026-10-03
+
+El comando `analyze` ahora acepta un modelo Poisson entrenado local mediante
+`--trained-model` y, si existe, su calibrador Platt mediante `--calibrator`.
+Ambos son opcionales y solo se cargan desde archivos locales confiables. Incluso
+con los artefactos, el informe sigue marcado como **experimental**: conecta el
+trabajo evaluado con el análisis diario, pero no afirma validación de producción.
+Suite: 120/120.
 
 ## Recuperación después de agotar contexto
 

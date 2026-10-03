@@ -33,10 +33,11 @@ from mlb_kaizen.tracking.human_machine import leaderboard
 from mlb_kaizen.validation.schema import validate_analysis_document
 from mlb_kaizen.training.dataset import load_jsonl
 from mlb_kaizen.training.trainers import PoissonTrainer, RandomForestTrainer
-from mlb_kaizen.training.artifacts import ModelArtifactMetadata, save_model_artifact
+from mlb_kaizen.training.artifacts import ModelArtifactMetadata, load_model_artifact, save_model_artifact
 from mlb_kaizen.evaluation.walk_forward import walk_forward_evaluate
-from mlb_kaizen.evaluation.calibration import temporal_calibration_report
+from mlb_kaizen.evaluation.calibration import PlattCalibrator, temporal_calibration_report
 from mlb_kaizen.evaluation.compare import ModelComparison
+from mlb_kaizen.services.trained_model import TrainedPoissonAnalysisModel
 
 
 def _parse_timestamp(value: str) -> datetime:
@@ -171,6 +172,16 @@ def build_parser() -> argparse.ArgumentParser:
     analysis.add_argument("--input", required=True, type=Path)
     analysis.add_argument("--persist", action="store_true")
     analysis.add_argument("--mode", choices=[mode.value for mode in AnalysisMode])
+    analysis.add_argument(
+        "--trained-model",
+        type=Path,
+        help="trusted local Poisson artifact created by train-model (uses the trained E3-style model)",
+    )
+    analysis.add_argument(
+        "--calibrator",
+        type=Path,
+        help="trusted local Platt calibration artifact; requires --trained-model",
+    )
     analysis.add_argument("--format", choices=("text", "json", "html"), default="text")
     analysis.add_argument("--output", type=Path)
     human = subcommands.add_parser("record-human-pick", help="append a human decision for the latest prediction")
@@ -339,9 +350,24 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "analyze":
         try:
             request = _parse_analysis_request(args.input, args.mode)
+            if args.calibrator and not args.trained_model:
+                raise ValueError("--calibrator requires --trained-model")
+            run_model = None
+            calibrator = None
+            if args.trained_model:
+                run_model, _ = TrainedPoissonAnalysisModel.from_artifact(args.trained_model)
+            if args.calibrator:
+                calibrator, _ = load_model_artifact(args.calibrator)
+                if not isinstance(calibrator, PlattCalibrator):
+                    raise ValueError("--calibrator must contain a PlattCalibrator artifact")
             if args.persist:
                 database.initialise(); database.store_game_snapshot(request.game)
-            result = AnalysisService(settings, database=database).analyse(request, persist=args.persist)
+            result = AnalysisService(
+                settings,
+                database=database,
+                run_model=run_model,
+                calibrator=calibrator,
+            ).analyse(request, persist=args.persist)
         except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
             print(f"Input rejected: {exc}"); return 2
         if args.format == "text":

@@ -872,3 +872,23 @@ antes).
 la sección 22 del documento maestro): usar `probable_pitchers`, ya presente en el dataset
 pero sin usar todavía, para ajustar el modelo por fuerza del abridor. Ver
 `data/evaluation/first_real_evaluation_2026-09-19.md` para el resto de la lista priorizada.
+
+## 23. Puente del modelo entrenado al comando de análisis (2026-10-03)
+
+Tras recuperar y validar E2--E5, corregir la regularización de E3 y evaluar la
+calibración temporal, se conectó el modelo Poisson E3 entrenado con Analyst
+Mode. El comando `analyze` acepta ahora:
+
+- `--trained-model RUTA`: artefacto Poisson local y confiable creado por
+  `train-model`.
+- `--calibrator RUTA`: calibrador Platt local opcional; requiere el modelo
+  entrenado y rechaza cualquier otro tipo de artefacto.
+
+Sin estas opciones, se conserva la fórmula fija anterior como alternativa.
+El sistema no cambia su declaración de seguridad: aun usando el modelo E3 y el
+calibrador, cada resultado sigue marcado como `EXPERIMENTAL`, porque la mejora
+fuera de muestra fue pequeña y todavía no equivale a validación de producción.
+
+Verificación: 120/120 tests. Próxima acción: hacer reproducible la creación del
+artefacto de calibración desde el flujo de línea de comandos y decidir, con esa
+base operativa, si iniciar el experimento de lineups (E6).
