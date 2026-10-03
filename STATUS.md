@@ -1,7 +1,7 @@
 # STATUS.md — MLB KAIZEN checkpoint
 
 fecha: 2026-10-03
-commit: 425e109
+commit: 4c1b467
 
 ## Integración de recuperación — 2026-10-03
 
@@ -228,6 +228,17 @@ permanece comprimido hacia 50%; Platt mejora sólo de 0.2463 a 0.2462 Brier.
 lineup con timestamps anteriores al partido. No se implementa E6 en este bloque,
 ni se etiqueta el modelo como validado o rentable. Detalle reproducible en
 `docs/experiments/2026-10-03-pre-e6-audit.md`.
+
+## E6-A — Auditoría de temporalidad de lineups — 2026-10-03
+
+**E6_DATA_BLOCKED.** Las 12,045 partidas históricas disponibles contienen cero
+lineups completos y cero timestamps que prueben disponibilidad antes del juego.
+Los archivos raw son schedules/resultados finales con estado dentro del juego,
+no alineaciones iniciales; la descarga actual de boxscores pasados sería
+postpartido. El proveedor y el diseño de snapshots sí permiten capturar lineups
+futuros, pero sólo serán válidos si `retrieved_at < game_start_time`. No se
+construye E6-B hasta obtener o capturar ese histórico. Ver
+`docs/experiments/2026-10-03-e6a-lineup-temporality-audit.md`.
 
 ## Recuperación después de agotar contexto
 

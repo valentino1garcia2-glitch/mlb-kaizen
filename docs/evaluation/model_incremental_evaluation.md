@@ -20,3 +20,11 @@ La auditoría completa está en
 La decisión es **READY_FOR_E6** únicamente para auditar/diseñar datos de
 lineup point-in-time. E3 sigue siendo la referencia; E2, E4 y E5 no se
 reclasifican como mejoras, y no se afirma validación ni rentabilidad.
+
+## E6-A — Disponibilidad temporal de lineups — 2026-10-03
+
+Auditoría completada en
+[`docs/experiments/2026-10-03-e6a-lineup-temporality-audit.md`](../experiments/2026-10-03-e6a-lineup-temporality-audit.md).
+Resultado: **E6_DATA_BLOCKED**. Las 12,045 partidas históricas auditadas tienen
+0 lineups, 0 timestamps de lineup utilizables y 0 confirmaciones pregame. No
+se inicia E6-B hasta recibir/capturar evidencia temporal válida.

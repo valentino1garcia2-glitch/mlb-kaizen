@@ -912,3 +912,18 @@ accuracy vs 53.11% de siempre elegir local), pero su media de probabilidad local
 **Decisión: READY_FOR_E6** únicamente para auditar disponibilidad histórica
 point-in-time de lineups. No equivale a modelo validado ni rentable. Registro
 completo: `docs/experiments/2026-10-03-pre-e6-audit.md`.
+
+## 25. E6-A — disponibilidad temporal de lineups (2026-10-03)
+
+Auditoría exclusivamente diagnóstica: los 12,045 juegos históricos no traen
+lineups, `player_id`/orden de bateo ni timestamps de lineup; cobertura segura
+pregame = 0%. Los archivos raw son schedules finales con `linescore` dentro del
+juego, no alineaciones iniciales. El collector v2 sí guarda `retrieved_at`,
+pero los 12,045 registros se recuperaron después de iniciar cada juego y no
+incluyen lineups. La SQLite actual tampoco contiene snapshots de lineup.
+
+La API/contrato existente puede almacenar un lineup prospectivo cuando MLB lo
+publica, pero sólo se puede usar en backtest si el snapshot registrado prueba
+`retrieved_at < game_start_time`. **Decisión: E6_DATA_BLOCKED**; no construir
+E6-B hasta recibir un histórico temporalmente verificable o empezar captura
+prospectiva. Detalle: `docs/experiments/2026-10-03-e6a-lineup-temporality-audit.md`.

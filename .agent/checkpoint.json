@@ -25,18 +25,18 @@
   },
   "tests_passed": 120,
   "tests_total": 120,
-  "last_verified_commit": "425e109",
+  "last_verified_commit": "4c1b467",
   "current_blockers": [
     "live verification of SportsGameOdds requires key and network",
     "live verification of MLB team stats and NWS weather is still pending",
     "CLV requires reliable opening/closing market snapshots",
     "current features (run rates only) show no measurable edge over a naive constant-home-win-rate baseline -- see data/evaluation/first_real_evaluation_2026-09-19.md"
   ],
-  "next_action": "E6 preflight only: audit historical lineup data for timestamps proving availability before each game; do not build lineup features until that evidence passes",
+  "next_action": "obtain or begin append-only capture of historical/prospective lineup snapshots with game_id, initial lineup, status and retrieved_at before game_start_time; rerun E6-A before E6-B",
   "analyst_mode": "DONE",
   "engineering_status": "8/8 phase deliverables implemented; external evidence gates remain",
   "empirical_validation": "E3_PLUS_TEMPORAL_PLATT_CALIBRATION_MODEST_OOS_IMPROVEMENT_NOT_PRODUCTION_VALIDATED",
-  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure and achieved Brier 0.2463 on untouched 2026 versus 0.2490 naive. Platt calibration was selected using 2024 fit and 2025 selection, then refit on 2025 and improved 2026 Brier marginally to 0.2462. The 2026-10-03 pre-E6 audit found E3 coherent enough for a lineup-data preflight: bullpen and park are mostly absorbed by team prevention, starter may be representation-limited, and home probability remains modestly undercalibrated. Do not call the model validated for production.",
+  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure and achieved Brier 0.2463 on untouched 2026 versus 0.2490 naive. Platt calibration was selected using 2024 fit and 2025 selection, then refit on 2025 and improved 2026 Brier marginally to 0.2462. E6-A audited 12,045 historical games and found 0 historical lineups, 0 usable lineup timestamps and 0 pregame confirmations; E6_DATA_BLOCKED. Do not call the model validated for production.",
   "recovery": {
     "integrated_at": "2026-10-03",
     "source_archive": "MLB_KAIZEN.zip",
