@@ -1,0 +1,63 @@
+{
+  "mode": "manual",
+  "league_runs_per_team": 4.4,
+  "game": {
+    "game_id": "mlb:EXAMPLE",
+    "official_date": "2026-09-18",
+    "home_team_id": "10",
+    "home_team_name": "HOME TEAM",
+    "away_team_id": "20",
+    "away_team_name": "AWAY TEAM",
+    "provenance": {
+      "source": "manual user input",
+      "retrieved_at": "2026-09-18T12:00:00+00:00",
+      "status": "available"
+    }
+  },
+  "home_profile": {
+    "team_id": "10",
+    "team_name": "HOME TEAM",
+    "offensive_index": 1.05,
+    "run_prevention_index": 0.96,
+    "sample_size": 150,
+    "data_quality": 0.9,
+    "provenance": {
+      "source": "manual fixture",
+      "retrieved_at": "2026-09-18T12:00:00+00:00",
+      "status": "available"
+    }
+  },
+  "away_profile": {
+    "team_id": "20",
+    "team_name": "AWAY TEAM",
+    "offensive_index": 0.98,
+    "run_prevention_index": 1.02,
+    "sample_size": 150,
+    "data_quality": 0.9,
+    "provenance": {
+      "source": "manual fixture",
+      "retrieved_at": "2026-09-18T12:00:00+00:00",
+      "status": "available"
+    }
+  },
+  "context": {
+    "prediction_timestamp": "2026-09-18T12:00:00+00:00",
+    "information_state": "T-3H",
+    "data_statuses": {
+      "starting_pitchers": "projected",
+      "lineups": "not_yet_published",
+      "odds": "available"
+    }
+  },
+  "market": {
+    "home_decimal_odds": 1.9,
+    "away_decimal_odds": 2.0,
+    "total_line": 8.5,
+    "over_decimal_odds": 1.91,
+    "under_decimal_odds": 1.91,
+    "home_run_line": -1.5,
+    "home_run_line_decimal_odds": 2.4,
+    "away_run_line_decimal_odds": 1.58,
+    "sportsbook": "manual"
+  }
+}

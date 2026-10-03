@@ -13,7 +13,9 @@ authors = [{name = "KAIZEN"}]
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "jsonschema>=4.21"]
+ml = ["numpy>=1.26", "scikit-learn>=1.4"]
+all = ["pytest>=8.0", "jsonschema>=4.21", "numpy>=1.26", "scikit-learn>=1.4"]
 
 [project.scripts]
 mlb-kaizen = "mlb_kaizen.interface.cli:main"

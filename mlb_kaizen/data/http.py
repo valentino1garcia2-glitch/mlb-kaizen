@@ -9,12 +9,21 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import Any
+from typing import Any, Mapping
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
+from mlb_kaizen.observability.logging import get_logger, log_event
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(__name__)
+
+
+def _source_host(url: str) -> str:
+    """Return scheme+host only; query strings may carry provider credentials."""
+
+    parts = urlsplit(url)
+    return f"{parts.scheme}://{parts.netloc}{parts.path}"
 
 
 class DataProviderError(RuntimeError):
@@ -52,8 +61,12 @@ class CachedHttpClient:
         self.retries = retries
         self.cache_ttl = timedelta(seconds=cache_ttl_seconds)
 
-    def get_json(self, url: str) -> RetrievedJson:
-        """Fetch a JSON object, using a fresh cached payload when available."""
+    def get_json(self, url: str, headers: Mapping[str, str] | None = None) -> RetrievedJson:
+        """Fetch a JSON object, using a fresh cached payload when available.
+
+        Authentication headers are never written to the cache payload. Prefer headers for secrets
+        such as API keys so cache files cannot accidentally retain credentials.
+        """
 
         cached = self._read_fresh_cache(url)
         if cached is not None:
@@ -62,7 +75,10 @@ class CachedHttpClient:
         last_error: Exception | None = None
         for attempt in range(1, self.retries + 1):
             try:
-                request = Request(url, headers={"User-Agent": "MLB-KAIZEN/0.1 (+research)"})
+                request_headers = {"User-Agent": "MLB-KAIZEN/0.1 (+research)"}
+                if headers:
+                    request_headers.update(dict(headers))
+                request = Request(url, headers=request_headers)
                 with urlopen(request, timeout=self.timeout_seconds) as response:  # nosec B310
                     if response.status != 200:
                         raise DataProviderError(f"unexpected HTTP status {response.status}")
@@ -75,7 +91,13 @@ class CachedHttpClient:
                 return result
             except (HTTPError, URLError, TimeoutError, json.JSONDecodeError, DataProviderError) as exc:
                 last_error = exc
-                LOGGER.warning("provider request failed", extra={"url": url, "attempt": attempt})
+                log_event(
+                    LOGGER,
+                    f"provider request failed on attempt {attempt}/{self.retries}",
+                    level=logging.WARNING,
+                    operation="http_get_json",
+                    source=_source_host(url),
+                )
                 if attempt < self.retries:
                     time.sleep(0.4 * (2 ** (attempt - 1)))
 
@@ -98,7 +120,12 @@ class CachedHttpClient:
                 return None
             return RetrievedJson(payload, url, retrieved_at, from_cache=True)
         except (KeyError, OSError, ValueError, json.JSONDecodeError):
-            LOGGER.warning("ignoring unreadable cache entry", extra={"path": str(path)})
+            log_event(
+                LOGGER,
+                f"ignoring unreadable cache entry: {path}",
+                level=logging.WARNING,
+                operation="cache_read",
+            )
             return None
 
     def _write_cache(self, result: RetrievedJson) -> None:

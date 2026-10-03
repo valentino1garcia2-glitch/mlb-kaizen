@@ -10,7 +10,11 @@
 
 The artifact exactly extends `mlb_kaizen/domain/models.py` with analysis, calculation, data-quality, and model-validation enums; completed-game, pitcher-line, probable-pitcher, lineup, venue, weather, and raw team-season records.
 
-This is partial E2 recovery only. It contains no providers, persistence, migrations, feature-store logic, training dataset, evaluation experiment, or evidence for E3–E5.
+This was partial E2 recovery only. It contained no providers, persistence, migrations, feature-store logic, training dataset, evaluation experiment, or evidence for E3–E5.
+
+## Superseded source
+
+On 2026-10-03, `MLB_KAIZEN.zip` was recovered and audited. It is a later, complete repository archive with the E2–E8 implementation and its own Git history. Its domain model does not contain `PitcherGameLine`; therefore that isolated type and its recovery-only test were not retained during the full-archive recovery. The rest of this artifact is represented by the complete archive's domain contracts and tests.
 
 ## Verification
 

@@ -4,8 +4,18 @@ import tempfile
 import unittest
 
 from mlb_kaizen.storage.database import KaizenDatabase
+from mlb_kaizen.storage.migrations import MIGRATIONS
 
-from .conftest import game
+from .conftest import (
+    available_weather,
+    confirmed_lineups,
+    game,
+    home_profile,
+    not_available_weather,
+    not_yet_published_lineups,
+    probable_pitcher,
+    team_season_stats,
+)
 
 
 class DatabaseTests(unittest.TestCase):
@@ -31,3 +41,67 @@ class DatabaseTests(unittest.TestCase):
         self.assertTrue(snapshot_id)
         self.assertTrue(prediction_id)
         self.assertEqual(count, 1)
+
+    def test_initialise_is_idempotent_and_records_every_migration_once(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
+            database.initialise()
+            database.initialise()
+            database.initialise()
+            with database._connection() as connection:
+                rows = connection.execute("SELECT version FROM schema_migrations ORDER BY version").fetchall()
+        applied_versions = [row[0] for row in rows]
+        self.assertEqual(applied_versions, [migration.version for migration in MIGRATIONS])
+
+    def test_probable_pitcher_snapshots_are_appended_not_persisted_only_when_projected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
+            database.initialise()
+            database.store_probable_pitcher(probable_pitcher())
+            count = database.probable_pitcher_count()
+        self.assertEqual(count, 1)
+
+    def test_lineup_snapshots_persist_both_confirmed_and_not_yet_published(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
+            database.initialise()
+            database.store_lineups(not_yet_published_lineups())
+            database.store_lineups(confirmed_lineups())
+            count = database.lineup_snapshot_count()
+        self.assertEqual(count, 2)
+
+    def test_weather_snapshots_persist_both_available_and_not_available(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
+            database.initialise()
+            database.store_weather(available_weather())
+            database.store_weather(not_available_weather())
+            count = database.weather_snapshot_count()
+        self.assertEqual(count, 2)
+
+    def test_team_season_stat_snapshots_are_appended(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
+            database.initialise()
+            database.store_team_season_stats(team_season_stats())
+            count = database.team_season_stat_count()
+        self.assertEqual(count, 1)
+
+
+# Fase 4.5 tracking and derived-feature persistence
+class DatabaseAnalystTests(unittest.TestCase):
+    def test_profile_and_analyst_decision_are_append_only(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
+            database.initialise()
+            database.store_team_run_profile(home_profile(), "2026")
+            database.store_analyst_decision(
+                game_id="mlb:1",
+                input_mode="manual",
+                data_quality=0.9,
+                model_validation_status="experimental",
+                human_pick={"market": "moneyline", "selection": "home"},
+                machine_pick={"market": "moneyline", "selection": "away"},
+            )
+            self.assertEqual(database.team_run_profile_count(), 1)
+            self.assertEqual(database.analyst_decision_count(), 1)

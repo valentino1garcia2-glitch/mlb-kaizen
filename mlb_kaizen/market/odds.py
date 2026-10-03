@@ -75,3 +75,18 @@ def fractional_kelly(probability: float, decimal_odds: float, fraction: float = 
     profit_multiple = decimal_odds - 1
     full_kelly = (probability * profit_multiple - (1 - probability)) / profit_multiple
     return max(0.0, min(1.0, full_kelly * fraction))
+
+
+def expected_value_per_unit_with_push(
+    win_probability: float, push_probability: float, decimal_odds: float
+) -> float:
+    """Expected net profit per unit when pushes return the stake."""
+
+    _validate_probability(win_probability)
+    _validate_probability(push_probability)
+    if win_probability + push_probability > 1 + 1e-12:
+        raise ValueError("win and push probabilities cannot exceed one")
+    if decimal_odds <= 1:
+        raise ValueError("decimal odds must exceed 1")
+    loss_probability = max(0.0, 1.0 - win_probability - push_probability)
+    return win_probability * (decimal_odds - 1) - loss_probability

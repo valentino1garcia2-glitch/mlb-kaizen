@@ -1,4 +1,4 @@
-"""Validation that preserves uncertainty and blocks unjustified signals."""
+"""Descriptive data/model readiness without hiding usable calculations."""
 
 from __future__ import annotations
 
@@ -6,21 +6,33 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from mlb_kaizen.config.settings import Settings
-from mlb_kaizen.domain.models import AnalysisContext, AvailabilityStatus, SignalStatus, TeamRunProfile
+from mlb_kaizen.domain.models import (
+    AnalysisContext,
+    AnalysisMode,
+    AvailabilityStatus,
+    CalculationStatus,
+    DataQualityStatus,
+    ModelValidationStatus,
+    SignalStatus,
+    TeamRunProfile,
+)
 
 
 @dataclass(frozen=True, slots=True)
 class QualityAssessment:
-    """Result of automatic data-quality checks before market recommendations."""
+    """Separate mathematical readiness, data quality and model validation."""
 
     data_quality: float
     status: SignalStatus
+    calculation_status: CalculationStatus
+    data_quality_status: DataQualityStatus
+    model_validation_status: ModelValidationStatus
     warnings: tuple[str, ...]
     blocking_reasons: tuple[str, ...]
 
 
 class QualityGate:
-    """Apply configurable readiness checks without pretending missing data is neutral."""
+    """Classify readiness; do not turn ordinary missing context into a math lockout."""
 
     critical_fields = ("starting_pitchers", "lineups", "odds")
 
@@ -33,9 +45,8 @@ class QualityGate:
         profiles: Iterable[TeamRunProfile],
         calibrated: bool,
         probability_uncertainty: float,
+        mode: AnalysisMode = AnalysisMode.SNAPSHOT,
     ) -> QualityAssessment:
-        """Assess data completeness separately from model probability."""
-
         profiles = tuple(profiles)
         if not profiles:
             raise ValueError("at least one profile is required")
@@ -49,21 +60,51 @@ class QualityGate:
         for field in self.critical_fields:
             status = context.data_statuses.get(field, AvailabilityStatus.UNKNOWN)
             if status in {AvailabilityStatus.MISSING, AvailabilityStatus.NOT_AVAILABLE, AvailabilityStatus.UNKNOWN}:
-                blockers.append(f"{field}: {status.value}")
+                # Signal/decision blocker only; the mathematical calculation may still run.
+                message = f"{field}: {status.value}"
+                warnings.append(message)
+                blockers.append(message)
             elif status in {AvailabilityStatus.PROJECTED, AvailabilityStatus.NOT_YET_PUBLISHED, AvailabilityStatus.STALE}:
                 warnings.append(f"{field}: {status.value}")
 
         if quality < self.settings.minimum_data_quality:
-            blockers.append("profile data quality below configured minimum")
+            warnings.append("profile data quality below configured minimum")
         if probability_uncertainty > self.settings.maximum_probability_uncertainty:
-            blockers.append("probability uncertainty exceeds configured maximum")
-        if blockers:
-            return QualityAssessment(quality, SignalStatus.DATA_INCOMPLETE, tuple(warnings), tuple(blockers))
+            warnings.append("probability uncertainty exceeds configured maximum")
+
+        if mode is AnalysisMode.MANUAL:
+            quality_status = DataQualityStatus.MANUAL
+        elif mode is AnalysisMode.HYBRID:
+            quality_status = DataQualityStatus.HYBRID
+        elif any("stale" in warning for warning in warnings):
+            quality_status = DataQualityStatus.STALE
+        elif warnings:
+            quality_status = DataQualityStatus.PARTIAL
+        else:
+            quality_status = DataQualityStatus.VERIFIED
+
+        validation_status = (
+            ModelValidationStatus.VALIDATED if calibrated else ModelValidationStatus.EXPERIMENTAL
+        )
+        has_material_data_gap = any(
+            field in warning
+            and any(token in warning for token in ("missing", "not_available", "unknown"))
+            for warning in warnings
+            for field in self.critical_fields
+        )
+        if has_material_data_gap:
+            status = SignalStatus.DATA_INCOMPLETE
+        else:
+            status = SignalStatus.NO_SIGNAL if calibrated else SignalStatus.MODEL_UNCALIBRATED
         if not calibrated:
-            return QualityAssessment(
-                quality,
-                SignalStatus.MODEL_UNCALIBRATED,
-                tuple(warnings),
-                ("no out-of-sample temporal calibration is registered",),
-            )
-        return QualityAssessment(quality, SignalStatus.NO_SIGNAL, tuple(warnings), tuple())
+            blockers.append("model output is experimental; market signal is preliminary")
+
+        return QualityAssessment(
+            data_quality=quality,
+            status=status,
+            calculation_status=CalculationStatus.READY,
+            data_quality_status=quality_status,
+            model_validation_status=validation_status,
+            warnings=tuple(warnings),
+            blocking_reasons=tuple(blockers),
+        )

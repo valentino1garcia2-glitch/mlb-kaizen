@@ -3,8 +3,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .venv/
+*.egg-info/
 .env
 data/*.sqlite3
 data/cache/
-data/mlb_kaizen_data/
-.agent/backups/

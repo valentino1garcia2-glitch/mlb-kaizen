@@ -23,12 +23,16 @@ class Settings:
     maximum_probability_uncertainty: float = 0.035
     minimum_data_quality: float = 0.80
     market_freshness_minutes: int = 10
+    sports_game_odds_api_key: str | None = None
+    sports_game_odds_bookmakers: tuple[str, ...] = ()
 
     @classmethod
     def from_environment(cls) -> "Settings":
         """Build settings without exposing credentials in source code or logs."""
 
         project_data = Path(os.getenv("MLB_KAIZEN_DATA_DIR", "data"))
+        bookmaker_text = os.getenv("MLB_KAIZEN_SGO_BOOKMAKERS", "")
+        bookmakers = tuple(value.strip() for value in bookmaker_text.split(",") if value.strip())
         return cls(
             database_path=Path(os.getenv("MLB_KAIZEN_DB", project_data / "mlb_kaizen.sqlite3")),
             cache_dir=Path(os.getenv("MLB_KAIZEN_CACHE_DIR", project_data / "cache")),
@@ -37,4 +41,6 @@ class Settings:
             cache_ttl_seconds=int(os.getenv("MLB_KAIZEN_CACHE_TTL", "900")),
             simulation_count=int(os.getenv("MLB_KAIZEN_SIMULATIONS", "100000")),
             random_seed=int(os.getenv("MLB_KAIZEN_RANDOM_SEED", "20260916")),
+            sports_game_odds_api_key=os.getenv("MLB_KAIZEN_SGO_API_KEY") or None,
+            sports_game_odds_bookmakers=bookmakers,
         )

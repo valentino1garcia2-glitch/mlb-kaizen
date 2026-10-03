@@ -1,0 +1,509 @@
+{
+  "dataset_name": "MLB_KAIZEN_GAME_COLLECTOR",
+  "schema_version": "1.0",
+  "generated_at_utc": "2026-09-19T18:18:22.331684+00:00",
+  "source": {
+    "provider": "MLB_STATS_API",
+    "endpoint": "https://statsapi.mlb.com/api/v1/schedule",
+    "game_type": "R",
+    "hydrate": "team,linescore,probablePitcher"
+  },
+  "historical_seasons": [
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "current_season": 2026,
+  "current_season_end": "2026-09-19",
+  "records": {
+    "total_unique_games": 12045,
+    "historical_games": 9720,
+    "current_2026_games": 2325,
+    "duplicates_removed": 195,
+    "final_games": 12030,
+    "games_without_score": 190,
+    "games_with_probable_pitcher": 12040
+  },
+  "validation": {
+    "errors": 0,
+    "error_samples": [],
+    "request_errors": 0,
+    "request_error_samples": []
+  },
+  "normalized_files": {
+    "2022": "/content/mlb_kaizen_data/normalized/historical/2022/games.jsonl",
+    "2023": "/content/mlb_kaizen_data/normalized/historical/2023/games.jsonl",
+    "2024": "/content/mlb_kaizen_data/normalized/historical/2024/games.jsonl",
+    "2025": "/content/mlb_kaizen_data/normalized/historical/2025/games.jsonl",
+    "2026": "/content/mlb_kaizen_data/normalized/current/2026/games.jsonl"
+  },
+  "raw_requests": [
+    {
+      "season": 2022,
+      "season_group": "historical",
+      "query_start": "2022-03-01",
+      "query_end": "2022-03-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2022-03-01&endDate=2022-03-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:14.727519+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2022/2022-03-01_to_2022-03-31__e945970d3a4d.json",
+      "raw_sha256": "e945970d3a4d1b17afde3ecfc6a444e395dceb14f2c9e4a35d1e06837d79f9b0",
+      "normalized_records": 0
+    },
+    {
+      "season": 2022,
+      "season_group": "historical",
+      "query_start": "2022-04-01",
+      "query_end": "2022-04-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2022-04-01&endDate=2022-04-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:15.947176+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2022/2022-04-01_to_2022-04-30__f2a0538cb668.json",
+      "raw_sha256": "f2a0538cb668f52713d0d878434f4d8345e8724fc30302fe0357628cd977ed3e",
+      "normalized_records": 328
+    },
+    {
+      "season": 2022,
+      "season_group": "historical",
+      "query_start": "2022-05-01",
+      "query_end": "2022-05-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2022-05-01&endDate=2022-05-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:17.876581+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2022/2022-05-01_to_2022-05-31__492162e9ba5c.json",
+      "raw_sha256": "492162e9ba5ce8f5ffc57b8a67254f42cec742d16a6b6192e838e21177534a3d",
+      "normalized_records": 441
+    },
+    {
+      "season": 2022,
+      "season_group": "historical",
+      "query_start": "2022-06-01",
+      "query_end": "2022-06-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2022-06-01&endDate=2022-06-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:19.878837+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2022/2022-06-01_to_2022-06-30__372cf7167c63.json",
+      "raw_sha256": "372cf7167c63879e65b5b67c4b82a6cbd0377b7ad1d36868a2dc84c6d2907256",
+      "normalized_records": 407
+    },
+    {
+      "season": 2022,
+      "season_group": "historical",
+      "query_start": "2022-07-01",
+      "query_end": "2022-07-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2022-07-01&endDate=2022-07-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:21.869196+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2022/2022-07-01_to_2022-07-31__1915b9466565.json",
+      "raw_sha256": "1915b9466565193b919e8f8a4695aac8de8c22596787560585a0f789206ff7e5",
+      "normalized_records": 395
+    },
+    {
+      "season": 2022,
+      "season_group": "historical",
+      "query_start": "2022-08-01",
+      "query_end": "2022-08-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2022-08-01&endDate=2022-08-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:23.781005+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2022/2022-08-01_to_2022-08-31__9cf8abfa008f.json",
+      "raw_sha256": "9cf8abfa008ff5ff449c97100ce3761fa5ef04fc8df90edae4213d66843f9270",
+      "normalized_records": 423
+    },
+    {
+      "season": 2022,
+      "season_group": "historical",
+      "query_start": "2022-09-01",
+      "query_end": "2022-09-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2022-09-01&endDate=2022-09-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:25.782829+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2022/2022-09-01_to_2022-09-30__bf14d29da0ff.json",
+      "raw_sha256": "bf14d29da0ff0bbd57ab0aa3ba18a972b1224ccea49402d0a002c96c23744d7d",
+      "normalized_records": 405
+    },
+    {
+      "season": 2022,
+      "season_group": "historical",
+      "query_start": "2022-10-01",
+      "query_end": "2022-10-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2022-10-01&endDate=2022-10-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:27.771236+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2022/2022-10-01_to_2022-10-31__0484bb8d9b44.json",
+      "raw_sha256": "0484bb8d9b444acaae935c1dbc1499e209de964b03ddf87cd4576ded5c298fff",
+      "normalized_records": 80
+    },
+    {
+      "season": 2022,
+      "season_group": "historical",
+      "query_start": "2022-11-01",
+      "query_end": "2022-11-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2022-11-01&endDate=2022-11-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:29.263978+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2022/2022-11-01_to_2022-11-30__e945970d3a4d.json",
+      "raw_sha256": "e945970d3a4d1b17afde3ecfc6a444e395dceb14f2c9e4a35d1e06837d79f9b0",
+      "normalized_records": 0
+    },
+    {
+      "season": 2023,
+      "season_group": "historical",
+      "query_start": "2023-03-01",
+      "query_end": "2023-03-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2023-03-01&endDate=2023-03-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:30.430495+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2023/2023-03-01_to_2023-03-31__7ff6a9356d14.json",
+      "raw_sha256": "7ff6a9356d140dd2b5f197137a5b2c88c32ad8705d3a5a42e34e08958dc09e2d",
+      "normalized_records": 20
+    },
+    {
+      "season": 2023,
+      "season_group": "historical",
+      "query_start": "2023-04-01",
+      "query_end": "2023-04-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2023-04-01&endDate=2023-04-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:31.684736+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2023/2023-04-01_to_2023-04-30__45996b0028b6.json",
+      "raw_sha256": "45996b0028b6dcb3db3882ff8c237b9aaa5afb3071a56d99360e7b9fd71efa96",
+      "normalized_records": 418
+    },
+    {
+      "season": 2023,
+      "season_group": "historical",
+      "query_start": "2023-05-01",
+      "query_end": "2023-05-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2023-05-01&endDate=2023-05-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:33.621243+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2023/2023-05-01_to_2023-05-31__5056346d7e07.json",
+      "raw_sha256": "5056346d7e07fdedf3260c6c8ee2649381a2ecf04b81ec975c5600cf8781b913",
+      "normalized_records": 418
+    },
+    {
+      "season": 2023,
+      "season_group": "historical",
+      "query_start": "2023-06-01",
+      "query_end": "2023-06-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2023-06-01&endDate=2023-06-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:35.517117+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2023/2023-06-01_to_2023-06-30__f2bc210bd063.json",
+      "raw_sha256": "f2bc210bd0630d6310870f989f812cc1b7868f01db7a0cfd595c01043fe0d2aa",
+      "normalized_records": 398
+    },
+    {
+      "season": 2023,
+      "season_group": "historical",
+      "query_start": "2023-07-01",
+      "query_end": "2023-07-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2023-07-01&endDate=2023-07-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:37.447574+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2023/2023-07-01_to_2023-07-31__55e302808392.json",
+      "raw_sha256": "55e30280839249d8005ce5694a5966e4a463febd2e1eaf9c06ee9471396dd793",
+      "normalized_records": 373
+    },
+    {
+      "season": 2023,
+      "season_group": "historical",
+      "query_start": "2023-08-01",
+      "query_end": "2023-08-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2023-08-01&endDate=2023-08-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:39.423599+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2023/2023-08-01_to_2023-08-31__6d57e2a77221.json",
+      "raw_sha256": "6d57e2a77221c8622e41f15a5be5a6322ccc23e1ab99c6d3d50487a971fae685",
+      "normalized_records": 416
+    },
+    {
+      "season": 2023,
+      "season_group": "historical",
+      "query_start": "2023-09-01",
+      "query_end": "2023-09-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2023-09-01&endDate=2023-09-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:41.652432+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2023/2023-09-01_to_2023-09-30__eadd738de023.json",
+      "raw_sha256": "eadd738de0231c385c3eb1638b4582e03e20f748b5556b503cdcd02caea0e86e",
+      "normalized_records": 417
+    },
+    {
+      "season": 2023,
+      "season_group": "historical",
+      "query_start": "2023-10-01",
+      "query_end": "2023-10-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2023-10-01&endDate=2023-10-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:43.719200+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2023/2023-10-01_to_2023-10-31__2bc9ac081efa.json",
+      "raw_sha256": "2bc9ac081efa2066adc9cd1bb4a30ab8d9789de984c83c7227a4fec78b44f62b",
+      "normalized_records": 16
+    },
+    {
+      "season": 2023,
+      "season_group": "historical",
+      "query_start": "2023-11-01",
+      "query_end": "2023-11-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2023-11-01&endDate=2023-11-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:44.963792+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2023/2023-11-01_to_2023-11-30__e945970d3a4d.json",
+      "raw_sha256": "e945970d3a4d1b17afde3ecfc6a444e395dceb14f2c9e4a35d1e06837d79f9b0",
+      "normalized_records": 0
+    },
+    {
+      "season": 2024,
+      "season_group": "historical",
+      "query_start": "2024-03-01",
+      "query_end": "2024-03-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2024-03-01&endDate=2024-03-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:46.224650+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2024/2024-03-01_to_2024-03-31__69da9a161ba8.json",
+      "raw_sha256": "69da9a161ba8b4eba50c101c5c05534be5454351153dba30edd462727fa50bf6",
+      "normalized_records": 57
+    },
+    {
+      "season": 2024,
+      "season_group": "historical",
+      "query_start": "2024-04-01",
+      "query_end": "2024-04-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2024-04-01&endDate=2024-04-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:47.565113+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2024/2024-04-01_to_2024-04-30__ed56eec7fa29.json",
+      "raw_sha256": "ed56eec7fa29d2a1fcf03148c1a40f449241447af48ab575dfb9063973177af8",
+      "normalized_records": 409
+    },
+    {
+      "season": 2024,
+      "season_group": "historical",
+      "query_start": "2024-05-01",
+      "query_end": "2024-05-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2024-05-01&endDate=2024-05-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:49.474779+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2024/2024-05-01_to_2024-05-31__76c93925777c.json",
+      "raw_sha256": "76c93925777cfa84f2d2e1a7eef60b243e20d637f5bb17cbbb80a7cf1919dfc6",
+      "normalized_records": 417
+    },
+    {
+      "season": 2024,
+      "season_group": "historical",
+      "query_start": "2024-06-01",
+      "query_end": "2024-06-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2024-06-01&endDate=2024-06-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:51.429626+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2024/2024-06-01_to_2024-06-30__188730f038f0.json",
+      "raw_sha256": "188730f038f04ea8c8441b3e8886afd4e8ed351f991aa3af2c0c435f67d261fb",
+      "normalized_records": 404
+    },
+    {
+      "season": 2024,
+      "season_group": "historical",
+      "query_start": "2024-07-01",
+      "query_end": "2024-07-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2024-07-01&endDate=2024-07-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:53.490182+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2024/2024-07-01_to_2024-07-31__d9ecc002b3f3.json",
+      "raw_sha256": "d9ecc002b3f3b6c7d0433ba198b415183680009870eb08038293b56d79e04563",
+      "normalized_records": 374
+    },
+    {
+      "season": 2024,
+      "season_group": "historical",
+      "query_start": "2024-08-01",
+      "query_end": "2024-08-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2024-08-01&endDate=2024-08-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:55.396986+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2024/2024-08-01_to_2024-08-31__4447348cdf54.json",
+      "raw_sha256": "4447348cdf540cb0e4235c2e731cf8d10eaa6d6628a17038a94eb3b92d71c394",
+      "normalized_records": 418
+    },
+    {
+      "season": 2024,
+      "season_group": "historical",
+      "query_start": "2024-09-01",
+      "query_end": "2024-09-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2024-09-01&endDate=2024-09-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:57.477242+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2024/2024-09-01_to_2024-09-30__8963a0ad1cbb.json",
+      "raw_sha256": "8963a0ad1cbb0f59184283c80a674d98970a4571dc58cad0862459d5853c0380",
+      "normalized_records": 390
+    },
+    {
+      "season": 2024,
+      "season_group": "historical",
+      "query_start": "2024-10-01",
+      "query_end": "2024-10-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2024-10-01&endDate=2024-10-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:17:59.408619+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2024/2024-10-01_to_2024-10-31__e945970d3a4d.json",
+      "raw_sha256": "e945970d3a4d1b17afde3ecfc6a444e395dceb14f2c9e4a35d1e06837d79f9b0",
+      "normalized_records": 0
+    },
+    {
+      "season": 2024,
+      "season_group": "historical",
+      "query_start": "2024-11-01",
+      "query_end": "2024-11-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2024-11-01&endDate=2024-11-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:00.609168+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2024/2024-11-01_to_2024-11-30__e945970d3a4d.json",
+      "raw_sha256": "e945970d3a4d1b17afde3ecfc6a444e395dceb14f2c9e4a35d1e06837d79f9b0",
+      "normalized_records": 0
+    },
+    {
+      "season": 2025,
+      "season_group": "historical",
+      "query_start": "2025-03-01",
+      "query_end": "2025-03-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2025-03-01&endDate=2025-03-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:01.805114+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2025/2025-03-01_to_2025-03-31__1a9a1e249310.json",
+      "raw_sha256": "1a9a1e2493106c97edc5e9dfc334cd14bcb60ef56409ad4c794577ef84fb13b1",
+      "normalized_records": 67
+    },
+    {
+      "season": 2025,
+      "season_group": "historical",
+      "query_start": "2025-04-01",
+      "query_end": "2025-04-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2025-04-01&endDate=2025-04-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:03.211995+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2025/2025-04-01_to_2025-04-30__e10edda5b0ed.json",
+      "raw_sha256": "e10edda5b0ed051f5461f456ebfc1f74640638f25c9ed4ebc7ba233fa83ad83f",
+      "normalized_records": 400
+    },
+    {
+      "season": 2025,
+      "season_group": "historical",
+      "query_start": "2025-05-01",
+      "query_end": "2025-05-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2025-05-01&endDate=2025-05-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:05.205523+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2025/2025-05-01_to_2025-05-31__342d62817b4a.json",
+      "raw_sha256": "342d62817b4a12bb0880aa9e4530e31a58dcab4205da978b1d1d632b1c35aab6",
+      "normalized_records": 422
+    },
+    {
+      "season": 2025,
+      "season_group": "historical",
+      "query_start": "2025-06-01",
+      "query_end": "2025-06-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2025-06-01&endDate=2025-06-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:07.271691+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2025/2025-06-01_to_2025-06-30__486ec7ff0a3b.json",
+      "raw_sha256": "486ec7ff0a3b1f3984d40ffaca1eeeb372897c3b9b8b52049e7841293eebfdbc",
+      "normalized_records": 402
+    },
+    {
+      "season": 2025,
+      "season_group": "historical",
+      "query_start": "2025-07-01",
+      "query_end": "2025-07-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2025-07-01&endDate=2025-07-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:09.210078+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2025/2025-07-01_to_2025-07-31__2279213749f2.json",
+      "raw_sha256": "2279213749f24aeedeb8c6610f1f8d5af6b4efde20069193c7ea8e83d95c477e",
+      "normalized_records": 376
+    },
+    {
+      "season": 2025,
+      "season_group": "historical",
+      "query_start": "2025-08-01",
+      "query_end": "2025-08-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2025-08-01&endDate=2025-08-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:11.168371+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2025/2025-08-01_to_2025-08-31__4fa3123f9ec7.json",
+      "raw_sha256": "4fa3123f9ec7a5276d05fabec66a23effb7930133e71932e2f201a55791a3395",
+      "normalized_records": 423
+    },
+    {
+      "season": 2025,
+      "season_group": "historical",
+      "query_start": "2025-09-01",
+      "query_end": "2025-09-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2025-09-01&endDate=2025-09-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:13.202870+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2025/2025-09-01_to_2025-09-30__075abf3bf640.json",
+      "raw_sha256": "075abf3bf6405382c492092e18f32f94573425b162e8c2212f89d10cfcf95e91",
+      "normalized_records": 374
+    },
+    {
+      "season": 2025,
+      "season_group": "historical",
+      "query_start": "2025-10-01",
+      "query_end": "2025-10-31",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2025-10-01&endDate=2025-10-31&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:15.178959+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2025/2025-10-01_to_2025-10-31__e945970d3a4d.json",
+      "raw_sha256": "e945970d3a4d1b17afde3ecfc6a444e395dceb14f2c9e4a35d1e06837d79f9b0",
+      "normalized_records": 0
+    },
+    {
+      "season": 2025,
+      "season_group": "historical",
+      "query_start": "2025-11-01",
+      "query_end": "2025-11-30",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2025-11-01&endDate=2025-11-30&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:16.361771+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2025/2025-11-01_to_2025-11-30__e945970d3a4d.json",
+      "raw_sha256": "e945970d3a4d1b17afde3ecfc6a444e395dceb14f2c9e4a35d1e06837d79f9b0",
+      "normalized_records": 0
+    },
+    {
+      "season": 2026,
+      "season_group": "current",
+      "query_start": "2026-03-01",
+      "query_end": "2026-09-19",
+      "request_url": "https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-03-01&endDate=2026-09-19&gameType=R&hydrate=team%2Clinescore%2CprobablePitcher",
+      "retrieved_at": "2026-09-19T18:18:17.621867+00:00",
+      "http_status": 200,
+      "raw_file": "/content/mlb_kaizen_data/raw/2026/2026-03-01_to_2026-09-19__f9a66dd60b47.json",
+      "raw_sha256": "f9a66dd60b47b455ec04399e6648df817f0a3b64fc2fb8f9e0b90cf28294fbf6",
+      "normalized_records": 2352
+    }
+  ],
+  "normalized_file_hashes": {
+    "/content/mlb_kaizen_data/normalized/historical/2022/games.jsonl": {
+      "sha256": "04cc8c0e98a5eb133ec8d529c2336b58cd108867e2d1ad47284778b671577c82",
+      "bytes": 2287873
+    },
+    "/content/mlb_kaizen_data/normalized/historical/2023/games.jsonl": {
+      "sha256": "641603471831f722efb714425fad80c92120283dd129f753585d5c99c862cfdc",
+      "bytes": 2287080
+    },
+    "/content/mlb_kaizen_data/normalized/historical/2024/games.jsonl": {
+      "sha256": "2ca609fab91c35d3738e381fc4e6e217e3d7427da440fe38355af8f7ac26bb41",
+      "bytes": 2287096
+    },
+    "/content/mlb_kaizen_data/normalized/historical/2025/games.jsonl": {
+      "sha256": "54dd31b6f56e9a27d5da46128c5846a505eb58423997b9ad7602624ec6e9cc59",
+      "bytes": 2286636
+    },
+    "/content/mlb_kaizen_data/normalized/current/2026/games.jsonl": {
+      "sha256": "5c7cc838a1e2bce647d21c4b2ddec0243ada29b6f6266db616cda97b4c484f9c",
+      "bytes": 2187902
+    }
+  }
+}

@@ -1,37 +1,48 @@
 {
-  "schema_version": 1,
-  "updated_at": "2026-10-03T06:06:17Z",
-  "project": "MLB KAIZEN",
-  "git": {
-    "commit": "0a334ca22d263bffdfc76ff721420af0773fdf3a",
-    "branch": "master",
-    "working_tree": "dirty",
-    "remote": "https://github.com/valentino1garcia2-glitch/mlb-kaizen.git",
-    "last_push": null
+  "checkpoint_date": "2026-09-19",
+  "engineering_phases_covered": [
+    1,
+    2,
+    3,
+    4,
+    4.5,
+    5,
+    6,
+    7,
+    8
+  ],
+  "phases_total": 8,
+  "phase_status": {
+    "1": "DONE",
+    "2": "DONE",
+    "3": "IMPLEMENTED_LIVE_VERIFY_PENDING",
+    "4": "DONE",
+    "4.5": "DONE",
+    "5": "REAL_EVALUATION_RUN_2026-09-19_NO_EDGE_FOUND_YET",
+    "6": "REAL_EVALUATION_RUN_2026-09-19_NO_EDGE_FOUND_YET",
+    "7": "REAL_EVALUATION_RUN_2026-09-19_NO_EDGE_FOUND_YET",
+    "8": "CORE_DONE_CLV_REAL_SNAPSHOTS_PENDING"
   },
-  "verification": {
-    "focused": "unittest tests.test_recovered_domain_records -v: PASS (4 tests)",
-    "full": "unittest discover -s tests -t . -v: PASS (13 tests)"
-  },
-  "state": {
-    "completed": [
-      "Recovered the available foundation archive into this active checkout.",
-      "Copied the supplied historical dataset locally without re-downloading it.",
-      "Installed AI Project Operating System recovery state and local workflow skills.",
-      "Recovered and tested the exact partial E2 domain-model artifact from the Claude chat export."
-    ],
-    "in_progress": [
-      "Recovering the remaining exact E2 source files and any subsequent E3\u2013E5 artifacts."
-    ],
-    "risks": [
-      "The reported E2\u2013E5 code, 94/94 test result, and Git remote are absent; they are not verified in this checkout.",
-      "The authoritative newer E2\u2013E5 checkout and its test evidence are not available in this environment."
-    ]
-  },
-  "next_action": "Obtain the next exact source artifact from Claude or another backup, compare it to this checkout, and recover it as a separately tested unit.",
-  "evidence": [
-    "sources/MLB KAIZEN.zip SHA-256 DA17B6FD1EF5D1729B9D380E65153A47230A4BB49B5D5399F09D44880BA90CB2",
-    "sources/mlb_kaizen_dataset (1).zip SHA-256 A53A68568D70B4E3345CC89FF78A8D38B65D73A618F96E30D52286791A902D3A",
-    "The archived repository contained no commits and no configured remote."
-  ]
+  "tests_passed": 81,
+  "tests_total": 81,
+  "last_verified_commit": "e12e17a",
+  "current_blockers": [
+    "live verification of SportsGameOdds requires key and network",
+    "live verification of MLB team stats and NWS weather is still pending",
+    "CLV requires reliable opening/closing market snapshots",
+    "current features (run rates only) show no measurable edge over a naive constant-home-win-rate baseline -- see data/evaluation/first_real_evaluation_2026-09-19.md"
+  ],
+  "next_action": "add probable_pitcher-based features (already in the real dataset, unused so far), then re-run walk_forward_evaluate and compare against the real baseline (Brier 0.2490-0.2494)",
+  "analyst_mode": "DONE",
+  "engineering_status": "8/8 phase deliverables implemented; external evidence gates remain",
+  "empirical_validation": "FIRST_REAL_RUN_COMPLETE_NO_EDGE_DEMONSTRATED",
+  "notes": "2026-09-19: ingested a real, independently-audited 2022-2026 dataset (12,045 games) and ran a real walk-forward evaluation. Neither the Poisson baseline nor the Random Forest challenger clearly beats a naive constant-probability reference on this fold. Do not call the model validated -- this result says the opposite: no edge yet with current features. See data/evaluation/first_real_evaluation_2026-09-19.md."
+  ,
+  "recovery": {
+    "integrated_at": "2026-10-03",
+    "source_archive": "MLB_KAIZEN.zip",
+    "source_archive_sha256": "AB8EF5B1008D3F120D4803837DB9B974618C4163F77BB9B09A39041CE770F25C",
+    "source_last_verified_commit": "e12e17a",
+    "integration_validation": "81/81 PASS with local scikit-learn and jsonschema dependencies"
+  }
 }

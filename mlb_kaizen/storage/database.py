@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, is_dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from enum import Enum
 from contextlib import contextmanager
 import json
@@ -12,7 +12,8 @@ import sqlite3
 from typing import Any
 from uuid import uuid4
 
-from mlb_kaizen.domain.models import Game
+from mlb_kaizen.domain.models import Game, GameLineups, GameWeather, ProbablePitcher, TeamRunProfile, TeamSeasonStats
+from mlb_kaizen.storage.migrations import MIGRATIONS
 
 
 def _json_default(value: Any) -> Any:
@@ -32,65 +33,34 @@ class KaizenDatabase:
         self.database_path = database_path
 
     def initialise(self) -> None:
-        """Create the initial schema idempotently."""
+        """Apply every migration that has not run yet, in order, exactly once.
+
+        Safe to call on an empty file, an already-migrated database, or one
+        created before this module existed (migration 1 mirrors that legacy
+        schema with CREATE TABLE IF NOT EXISTS, so it is a no-op there and is
+        simply recorded as applied).
+        """
 
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
         with self._connection() as connection:
-            connection.executescript(
-                """
-                PRAGMA foreign_keys = ON;
-                CREATE TABLE IF NOT EXISTS game_snapshots (
-                    snapshot_id TEXT PRIMARY KEY,
-                    game_id TEXT NOT NULL,
-                    official_date TEXT NOT NULL,
-                    retrieved_at TEXT NOT NULL,
-                    source TEXT NOT NULL,
-                    payload_json TEXT NOT NULL
-                );
-                CREATE INDEX IF NOT EXISTS idx_game_snapshots_game_time
-                    ON game_snapshots(game_id, retrieved_at);
-
-                CREATE TABLE IF NOT EXISTS market_quotes (
-                    quote_id TEXT PRIMARY KEY,
-                    game_id TEXT NOT NULL,
-                    sportsbook TEXT NOT NULL,
-                    market TEXT NOT NULL,
-                    selection TEXT NOT NULL,
-                    line REAL,
-                    decimal_odds REAL NOT NULL CHECK(decimal_odds > 1),
-                    captured_at TEXT NOT NULL,
-                    source TEXT NOT NULL,
-                    payload_json TEXT NOT NULL
-                );
-                CREATE INDEX IF NOT EXISTS idx_market_quotes_game_time
-                    ON market_quotes(game_id, captured_at);
-
-                CREATE TABLE IF NOT EXISTS predictions (
-                    prediction_id TEXT PRIMARY KEY,
-                    game_id TEXT NOT NULL,
-                    prediction_timestamp TEXT NOT NULL,
-                    data_timestamp TEXT NOT NULL,
-                    model_version TEXT NOT NULL,
-                    feature_version TEXT NOT NULL,
-                    raw_probability REAL,
-                    calibrated_probability REAL,
-                    uncertainty REAL,
-                    data_quality REAL NOT NULL CHECK(data_quality >= 0 AND data_quality <= 1),
-                    input_json TEXT NOT NULL,
-                    output_json TEXT NOT NULL
-                );
-                CREATE INDEX IF NOT EXISTS idx_predictions_game_time
-                    ON predictions(game_id, prediction_timestamp);
-
-                CREATE TABLE IF NOT EXISTS results (
-                    result_id TEXT PRIMARY KEY,
-                    game_id TEXT NOT NULL,
-                    recorded_at TEXT NOT NULL,
-                    source TEXT NOT NULL,
-                    payload_json TEXT NOT NULL
-                );
-                """
+            connection.execute(
+                """CREATE TABLE IF NOT EXISTS schema_migrations (
+                       version INTEGER PRIMARY KEY,
+                       description TEXT NOT NULL,
+                       applied_at TEXT NOT NULL
+                   )"""
             )
+            applied = {
+                row[0] for row in connection.execute("SELECT version FROM schema_migrations").fetchall()
+            }
+            for migration in MIGRATIONS:
+                if migration.version in applied:
+                    continue
+                connection.executescript(migration.sql)
+                connection.execute(
+                    "INSERT INTO schema_migrations (version, description, applied_at) VALUES (?, ?, ?)",
+                    (migration.version, migration.description, datetime.now(UTC).isoformat()),
+                )
 
     def store_game_snapshot(self, game: Game) -> str:
         """Append a game snapshot. Revised source data remains auditable."""
@@ -204,6 +174,281 @@ class KaizenDatabase:
 
         with self._connection() as connection:
             return int(connection.execute("SELECT COUNT(*) FROM predictions").fetchone()[0])
+
+    def latest_prediction_for_game(self, game_id: str) -> dict[str, Any] | None:
+        """Return the latest prediction snapshot for a game without mutating history."""
+
+        with self._connection() as connection:
+            row = connection.execute(
+                "SELECT * FROM predictions WHERE game_id = ? ORDER BY prediction_timestamp DESC LIMIT 1",
+                (game_id,),
+            ).fetchone()
+        if row is None:
+            return None
+        return {
+            "prediction_id": row["prediction_id"],
+            "prediction_timestamp": row["prediction_timestamp"],
+            "data_timestamp": row["data_timestamp"],
+            "data_quality": row["data_quality"],
+            "input": json.loads(row["input_json"]),
+            "output": json.loads(row["output_json"]),
+        }
+
+    def store_probable_pitcher(self, pitcher: ProbablePitcher) -> str:
+        """Append one team's probable-pitcher check; never overwrites a prior one.
+
+        Storing a NOT_YET_PUBLISHED record is deliberate: it proves the check
+        happened at that timestamp, which a later "still missing" cannot.
+        """
+
+        snapshot_id = str(uuid4())
+        with self._connection() as connection:
+            connection.execute(
+                """INSERT INTO probable_pitcher_snapshots
+                   (snapshot_id, game_id, team_id, status, retrieved_at, source, payload_json)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    snapshot_id,
+                    pitcher.game_id,
+                    pitcher.team_id,
+                    pitcher.status.value,
+                    pitcher.provenance.retrieved_at.isoformat(),
+                    pitcher.provenance.source,
+                    json.dumps(pitcher, default=_json_default, sort_keys=True),
+                ),
+            )
+        return snapshot_id
+
+    def probable_pitcher_count(self) -> int:
+        """Return the number of stored probable-pitcher checks."""
+
+        with self._connection() as connection:
+            return int(connection.execute("SELECT COUNT(*) FROM probable_pitcher_snapshots").fetchone()[0])
+
+    def store_lineups(self, lineups: GameLineups) -> str:
+        """Append one lineup check for a game; confirmed or not-yet-published both persist."""
+
+        snapshot_id = str(uuid4())
+        with self._connection() as connection:
+            connection.execute(
+                """INSERT INTO lineup_snapshots
+                   (snapshot_id, game_id, status, retrieved_at, source, payload_json)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (
+                    snapshot_id,
+                    lineups.game_id,
+                    lineups.status.value,
+                    lineups.provenance.retrieved_at.isoformat(),
+                    lineups.provenance.source,
+                    json.dumps(lineups, default=_json_default, sort_keys=True),
+                ),
+            )
+        return snapshot_id
+
+    def lineup_snapshot_count(self) -> int:
+        """Return the number of stored lineup checks."""
+
+        with self._connection() as connection:
+            return int(connection.execute("SELECT COUNT(*) FROM lineup_snapshots").fetchone()[0])
+
+    def store_weather(self, weather: GameWeather) -> str:
+        """Append one weather check for a game; NOT_AVAILABLE also persists.
+
+        Forecasts drift as game time approaches, so each fetch is its own
+        row, never an update to a previous one.
+        """
+
+        snapshot_id = str(uuid4())
+        with self._connection() as connection:
+            connection.execute(
+                """INSERT INTO weather_snapshots
+                   (snapshot_id, game_id, status, retrieved_at, source, payload_json)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (
+                    snapshot_id,
+                    weather.game_id,
+                    weather.status.value,
+                    weather.provenance.retrieved_at.isoformat(),
+                    weather.provenance.source,
+                    json.dumps(weather, default=_json_default, sort_keys=True),
+                ),
+            )
+        return snapshot_id
+
+    def weather_snapshot_count(self) -> int:
+        """Return the number of stored weather checks."""
+
+        with self._connection() as connection:
+            return int(connection.execute("SELECT COUNT(*) FROM weather_snapshots").fetchone()[0])
+
+    def store_team_season_stats(self, stats: TeamSeasonStats) -> str:
+        """Append one team's raw season-stat snapshot; never overwrites a prior pull."""
+
+        snapshot_id = str(uuid4())
+        with self._connection() as connection:
+            connection.execute(
+                """INSERT INTO team_season_stat_snapshots
+                   (snapshot_id, team_id, season, retrieved_at, source, payload_json)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (
+                    snapshot_id,
+                    stats.team_id,
+                    stats.season,
+                    stats.provenance.retrieved_at.isoformat(),
+                    stats.provenance.source,
+                    json.dumps(stats, default=_json_default, sort_keys=True),
+                ),
+            )
+        return snapshot_id
+
+    def team_season_stat_count(self) -> int:
+        """Return the number of stored team season-stat snapshots."""
+
+        with self._connection() as connection:
+            return int(connection.execute("SELECT COUNT(*) FROM team_season_stat_snapshots").fetchone()[0])
+
+    def store_team_run_profile(self, profile: TeamRunProfile, season: str) -> str:
+        """Append a derived TeamRunProfile snapshot for reproducible future backtests."""
+
+        if not season:
+            raise ValueError("season is required")
+        snapshot_id = str(uuid4())
+        formula_version = "FS-RUN-PROFILE-1"
+        with self._connection() as connection:
+            connection.execute(
+                """INSERT INTO team_run_profile_snapshots
+                   (snapshot_id, team_id, season, retrieved_at, source, formula_version, payload_json)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    snapshot_id,
+                    profile.team_id,
+                    season,
+                    profile.provenance.retrieved_at.isoformat(),
+                    profile.provenance.source,
+                    formula_version,
+                    json.dumps(profile, default=_json_default, sort_keys=True),
+                ),
+            )
+        return snapshot_id
+
+    def team_run_profile_count(self) -> int:
+        """Return the number of stored derived feature snapshots."""
+
+        with self._connection() as connection:
+            return int(connection.execute("SELECT COUNT(*) FROM team_run_profile_snapshots").fetchone()[0])
+
+    def store_analyst_decision(
+        self,
+        *,
+        game_id: str,
+        input_mode: str,
+        data_quality: float,
+        model_validation_status: str,
+        human_pick: dict[str, Any] | None,
+        machine_pick: dict[str, Any] | None,
+        prediction_id: str | None = None,
+        created_at: datetime | None = None,
+    ) -> str:
+        """Append an immutable human-vs-machine decision record."""
+
+        if not game_id or not input_mode:
+            raise ValueError("game_id and input_mode are required")
+        if not 0 <= data_quality <= 1:
+            raise ValueError("data_quality must be between zero and one")
+        timestamp = created_at or datetime.now(UTC)
+        if timestamp.tzinfo is None or timestamp.utcoffset() is None:
+            raise ValueError("created_at must be timezone-aware")
+        decision_id = str(uuid4())
+        human_market = human_selection = machine_market = machine_selection = None
+        human_line = machine_line = None
+        if human_pick:
+            human_market = str(human_pick.get("market")) if human_pick.get("market") is not None else None
+            human_selection = str(human_pick.get("selection")) if human_pick.get("selection") is not None else None
+            human_line = float(human_pick["line"]) if human_pick.get("line") is not None else None
+        if machine_pick:
+            machine_market = str(machine_pick.get("market")) if machine_pick.get("market") is not None else None
+            machine_selection = str(machine_pick.get("selection")) if machine_pick.get("selection") is not None else None
+            machine_line = float(machine_pick["line"]) if machine_pick.get("line") is not None else None
+        payload = {"human_pick": human_pick, "machine_pick": machine_pick}
+        with self._connection() as connection:
+            connection.execute(
+                """INSERT INTO analyst_decisions
+                   (decision_id, game_id, prediction_id, created_at, input_mode,
+                    human_market, human_selection, human_line, machine_market,
+                    machine_selection, machine_line, data_quality, model_validation_status, payload_json)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    decision_id, game_id, prediction_id, timestamp.isoformat(), input_mode,
+                    human_market, human_selection, human_line, machine_market, machine_selection,
+                    machine_line, data_quality, model_validation_status,
+                    json.dumps(payload, default=_json_default, sort_keys=True),
+                ),
+            )
+        return decision_id
+
+    def analyst_decision_count(self) -> int:
+        """Return the number of immutable analyst decision records."""
+
+        with self._connection() as connection:
+            return int(connection.execute("SELECT COUNT(*) FROM analyst_decisions").fetchone()[0])
+
+    def store_result_snapshot(
+        self, *, game_id: str, recorded_at: datetime, source: str, home_score: int, away_score: int
+    ) -> str:
+        """Append a final-result snapshot used by the human-vs-machine tracker."""
+
+        if recorded_at.tzinfo is None or recorded_at.utcoffset() is None:
+            raise ValueError("recorded_at must be timezone-aware")
+        if home_score < 0 or away_score < 0:
+            raise ValueError("scores cannot be negative")
+        result_id = str(uuid4())
+        payload = {"home_score": home_score, "away_score": away_score}
+        with self._connection() as connection:
+            connection.execute(
+                "INSERT INTO results (result_id, game_id, recorded_at, source, payload_json) VALUES (?, ?, ?, ?, ?)",
+                (result_id, game_id, recorded_at.isoformat(), source, json.dumps(payload, sort_keys=True)),
+            )
+        return result_id
+
+    def result_count(self) -> int:
+        """Return the number of stored result snapshots."""
+
+        with self._connection() as connection:
+            return int(connection.execute("SELECT COUNT(*) FROM results").fetchone()[0])
+
+    def leaderboard_rows(self) -> list[dict[str, Any]]:
+        """Return latest analyst decision/result pairs as dictionaries."""
+
+        with self._connection() as connection:
+            decisions = connection.execute(
+                "SELECT * FROM analyst_decisions ORDER BY created_at ASC"
+            ).fetchall()
+            results = connection.execute(
+                "SELECT game_id, payload_json, recorded_at FROM results ORDER BY recorded_at ASC"
+            ).fetchall()
+        latest_result: dict[str, dict[str, Any]] = {}
+        for row in results:
+            latest_result[row["game_id"]] = {
+                **json.loads(row["payload_json"]),
+                "recorded_at": row["recorded_at"],
+            }
+        output: list[dict[str, Any]] = []
+        for row in decisions:
+            payload = json.loads(row["payload_json"])
+            result = latest_result.get(row["game_id"])
+            output.append(
+                {
+                    "game_id": row["game_id"],
+                    "created_at": row["created_at"],
+                    "input_mode": row["input_mode"],
+                    "model_validation_status": row["model_validation_status"],
+                    "data_quality": row["data_quality"],
+                    "human_pick": payload.get("human_pick"),
+                    "machine_pick": payload.get("machine_pick"),
+                    "result": result,
+                }
+            )
+        return output
 
     @contextmanager
     def _connection(self):

@@ -33,6 +33,8 @@ class BaselineRunModel:
     The indices must be produced by a timestamp-aware feature pipeline. The
     current model intentionally does not claim that it has learned these weights;
     all constants are configuration and must be validated via walk-forward tests.
+    ``league_runs_per_team`` is required explicitly so a stale or invented league
+    average cannot be silently substituted.
     """
 
     model_version = "MLB-KAIZEN-BASELINE-0.1.0"
@@ -40,7 +42,7 @@ class BaselineRunModel:
 
     def __init__(
         self,
-        league_runs_per_team: float = 4.40,
+        league_runs_per_team: float,
         home_advantage_multiplier: float = 1.035,
         dispersion: float = 4.0,
     ) -> None:

@@ -24,6 +24,7 @@ class AnalysisServiceTests(unittest.TestCase):
             )
             request = AnalysisRequest(
                 game=game(),
+                league_runs_per_team=4.40,
                 home_profile=home_profile(),
                 away_profile=away_profile(),
                 context=AnalysisContext(

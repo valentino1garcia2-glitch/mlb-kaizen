@@ -1,0 +1,32 @@
+MLB KAIZEN — COLLECTION AUDIT
+======================================================================
+
+Generated UTC: 2026-09-19T18:18:22.331684+00:00
+Source: https://statsapi.mlb.com/api/v1/schedule
+Historical seasons: [2022, 2023, 2024, 2025]
+Current season: 2026
+Current season end: 2026-09-19
+
+TOTAL UNIQUE GAMES: 12045
+HISTORICAL 2022-2025: 9720
+CURRENT 2026: 2325
+DUPLICATES REMOVED: 195
+FINAL GAMES: 12030
+WITHOUT SCORE: 190
+WITH PROBABLE PITCHER: 12040
+VALIDATION ERRORS: 0
+REQUEST ERRORS: 0
+
+BY SEASON
+----------------------------------------------------------------------
+2022: 2430 games
+2023: 2430 games
+2024: 2430 games
+2025: 2430 games
+2026: 2325 games
+
+STATUS COUNTS
+----------------------------------------------------------------------
+Final: 12030
+Live: 1
+Preview: 14

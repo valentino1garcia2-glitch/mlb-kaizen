@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mlb-kaizen.local/schema/analysis-input.schema.json",
+  "title": "MLB KAIZEN Analyst Mode input",
+  "type": "object",
+  "required": ["game", "home_profile", "away_profile", "context", "league_runs_per_team"],
+  "properties": {
+    "mode": {"enum": ["live", "snapshot", "manual", "hybrid"]},
+    "league_runs_per_team": {"type": "number", "exclusiveMinimum": 0},
+    "game": {"$ref": "#/$defs/game"},
+    "home_profile": {"$ref": "#/$defs/profile"},
+    "away_profile": {"$ref": "#/$defs/profile"},
+    "context": {
+      "type": "object",
+      "required": ["prediction_timestamp", "information_state"],
+      "properties": {
+        "prediction_timestamp": {"type": "string", "format": "date-time"},
+        "information_state": {"type": "string", "minLength": 1},
+        "data_statuses": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "market": {
+      "type": "object",
+      "properties": {
+        "home_decimal_odds": {"type": "number", "exclusiveMinimum": 1},
+        "away_decimal_odds": {"type": "number", "exclusiveMinimum": 1},
+        "total_line": {"type": "number", "minimum": 0},
+        "over_decimal_odds": {"type": "number", "exclusiveMinimum": 1},
+        "under_decimal_odds": {"type": "number", "exclusiveMinimum": 1},
+        "home_run_line": {"type": "number"},
+        "home_run_line_decimal_odds": {"type": "number", "exclusiveMinimum": 1},
+        "away_run_line_decimal_odds": {"type": "number", "exclusiveMinimum": 1},
+        "sportsbook": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "provenance": {
+      "type": "object",
+      "required": ["source", "retrieved_at", "status"],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "retrieved_at": {"type": "string", "format": "date-time"},
+        "effective_at": {"type": ["string", "null"], "format": "date-time"},
+        "source_url": {"type": ["string", "null"]},
+        "source_version": {"type": ["string", "null"]},
+        "status": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "game": {
+      "type": "object",
+      "required": ["game_id", "official_date", "home_team_id", "home_team_name", "away_team_id", "away_team_name", "provenance"],
+      "properties": {
+        "game_id": {"type": "string", "minLength": 1},
+        "official_date": {"type": "string", "format": "date"},
+        "home_team_id": {"type": "string", "minLength": 1},
+        "home_team_name": {"type": "string", "minLength": 1},
+        "away_team_id": {"type": "string", "minLength": 1},
+        "away_team_name": {"type": "string", "minLength": 1},
+        "start_time": {"type": ["string", "null"], "format": "date-time"},
+        "venue_name": {"type": ["string", "null"]},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      },
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "required": ["team_id", "team_name", "offensive_index", "run_prevention_index", "sample_size", "data_quality", "provenance"],
+      "properties": {
+        "team_id": {"type": "string", "minLength": 1},
+        "team_name": {"type": "string", "minLength": 1},
+        "offensive_index": {"type": "number", "exclusiveMinimum": 0},
+        "run_prevention_index": {"type": "number", "exclusiveMinimum": 0},
+        "sample_size": {"type": "integer", "minimum": 0},
+        "data_quality": {"type": "number", "minimum": 0, "maximum": 1},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

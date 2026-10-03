@@ -1,61 +1,63 @@
 # MLB KAIZEN
 
-Base reproducible para análisis cuantitativo de MLB. La primera entrega es un
-vertical slice deliberadamente conservador: datos con procedencia, validación,
-mercado, almacenamiento inmutable, un modelo de carreras transparente y una
-simulación reproducible. No emite una recomendación de apuesta si faltan datos
-críticos o calibración temporal.
+Herramienta reproducible de análisis prepartido de MLB. El flujo práctico es:
 
-## Principios
+`inputs → baseline → Monte Carlo → comparación contra mercado → salida de máquina → pick humano → resultado → Humano vs Máquina`.
 
-- Datos observados, estimaciones del modelo y precios de mercado permanecen separados.
-- Las predicciones se guardan como observaciones inmutables con versiones y timestamps.
-- Las cuotas se convierten primero a decimal; EV y Kelly nunca operan directamente sobre
-  cuotas americanas.
-- El modelo base es una hipótesis verificable, no una afirmación de rentabilidad.
-- La calibración y el backtest walk-forward son requisitos antes de habilitar señales.
+La validación estadística se mantiene separada del cálculo: un modelo experimental puede mostrar sus
+números, pero esos números deben quedar etiquetados como experimentales hasta completar un backtest
+point-in-time real.
+
+## Modos de análisis
+
+- `live`: información obtenida de proveedores.
+- `snapshot`: información previamente guardada.
+- `manual`: datos introducidos por el usuario.
+- `hybrid`: mezcla explícita de fuentes.
+
+El modo manual/híbrido permite introducir un pitcher proyectado que el analista conoce antes de que
+el proveedor lo marque como confirmado. El sistema registra el dato como `MANUAL`, no como confirmación
+oficial.
 
 ## Instalación
 
-Requiere Python 3.11 o superior.
+Python 3.11+.
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-python -m pip install -e ".[dev]"
-python -m pytest
+python -m pip install -e ".[all]"
 ```
 
-En Colab/Jupyter puede usar `pip install -e .` desde el directorio del proyecto.
-
-## Comandos iniciales
+## Comandos útiles
 
 ```bash
 mlb-kaizen init-db
-mlb-kaizen health
-mlb-kaizen schedule --date 2026-09-16
+mlb-kaizen status
+mlb-kaizen analyze --input examples/analysis-input.manual.example.json --mode manual
+mlb-kaizen leaderboard
 ```
 
-`schedule` usa el endpoint público de MLB Stats API y guarda la respuesta en caché con
-timestamp. La documentación disponible para ese endpoint es comunitaria; por ello el
-adaptador registra la procedencia y trata cualquier fallo como `DATA NOT VERIFIED`, no
-como ausencia de juegos. Antes de automatizar mercados, Statcast, clima, lesiones o
-lineups deben verificarse sus proveedores, términos y campos.
+Para entrenamiento/evaluación:
 
-## Estado de implementación
+```bash
+mlb-kaizen train-model --dataset PATH.jsonl --model poisson --output artifacts/poisson
+mlb-kaizen backtest --dataset PATH.jsonl --model poisson --min-train 30 --test-window 10 --calibrate
+```
 
-Implementado ahora:
+La suite de desarrollo:
 
-- configuración por ambiente, caché HTTP con reintentos y timeout;
-- adaptador de calendario MLB;
-- modelos de procedencia y disponibilidad de datos;
-- SQLite para snapshots, cuotas, predicciones y resultados;
-- validadores de datos y puerta de calidad;
-- conversión de cuotas, no-vig proporcional, EV y Kelly;
-- modelo base de carreras con supuestos explícitos;
-- Monte Carlo Negativa Binomial con semilla;
-- pruebas unitarias de los componentes anteriores.
+```bash
+python3 -m unittest discover -s tests -t . -v
+python3 scripts/verify.py
+```
 
-Pendiente y bloqueado hasta disponer de fuentes verificadas e históricos con timestamp:
-Statcast, lineups, pitchers, bullpen, clima, proveedor de cuotas, entrenamiento,
-calibración temporal, CLV y backtesting walk-forward.
+## Estado
+
+El estado operativo se encuentra en `STATUS.md`. Para recuperación después de una ventana de contexto,
+leer `AGENTS.md`/`CLAUDE.md`, `STATUS.md` y Git. `HANDOFF.md` es histórico y no se relee por defecto.
+
+## Evidencia
+
+Los fixtures sintéticos y ejemplos manuales sirven para verificar el código, no para afirmar precisión
+real. La validación empírica requiere datos históricos reales con timestamps point-in-time.

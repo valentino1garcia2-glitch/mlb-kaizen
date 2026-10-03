@@ -116,7 +116,12 @@ class Game:
 
 @dataclass(frozen=True, slots=True)
 class CompletedGameResult:
-    """A finished game's identity, teams and final score."""
+    """A finished game's identity, teams and final score.
+
+    Distinct from Game (which is pregame identity, no score) because a
+    result is only valid once the game is actually Final -- mixing the two
+    concepts risks treating an in-progress score as a final one.
+    """
 
     game_id: str
     official_date: date
@@ -137,42 +142,6 @@ class CompletedGameResult:
         _require_aware(self.start_time, "start_time")
         if self.home_runs < 0 or self.away_runs < 0:
             raise ValueError("run totals cannot be negative")
-
-
-@dataclass(frozen=True, slots=True)
-class PitcherGameLine:
-    """One pitcher's own appearance line in one game."""
-
-    game_id: str
-    pitcher_id: str
-    pitcher_name: str
-    side: str
-    is_starter: bool
-    innings_pitched: str
-    runs_allowed: int
-    earned_runs: int
-    walks: int
-    strikeouts: int
-    hits_allowed: int
-    home_runs_allowed: int
-    provenance: DataProvenance
-
-    def __post_init__(self) -> None:
-        if not self.game_id or not self.pitcher_id:
-            raise ValueError("game_id and pitcher_id are required")
-        if self.side not in ("home", "away"):
-            raise ValueError("side must be 'home' or 'away'")
-        if self.runs_allowed < self.earned_runs:
-            raise ValueError("runs_allowed cannot be less than earned_runs")
-        if (
-            self.runs_allowed < 0
-            or self.earned_runs < 0
-            or self.walks < 0
-            or self.strikeouts < 0
-            or self.hits_allowed < 0
-            or self.home_runs_allowed < 0
-        ):
-            raise ValueError("pitching counting stats cannot be negative")
 
 
 @dataclass(frozen=True, slots=True)
@@ -206,7 +175,12 @@ class TeamRunProfile:
 
 @dataclass(frozen=True, slots=True)
 class ProbablePitcher:
-    """A probable starting pitcher for one team, or a recorded absence."""
+    """A probable starting pitcher for one team, or a recorded absence.
+
+    Even when nothing has been posted yet, the provenance records that this
+    was checked at a specific time. "Not yet published" is point-in-time
+    information, not a missing observation.
+    """
 
     game_id: str
     team_id: str
@@ -249,7 +223,12 @@ class LineupSlot:
 
 @dataclass(frozen=True, slots=True)
 class GameLineups:
-    """Confirmed lineups for both teams, or a recorded not-yet-posted state."""
+    """Confirmed lineups for both teams, or a recorded not-yet-posted state.
+
+    provenance is required even when nothing was posted yet: knowing *when*
+    the lineup was checked is itself point-in-time information a feature
+    pipeline needs, not something that can be reconstructed from empty slots.
+    """
 
     game_id: str
     status: AvailabilityStatus
@@ -287,7 +266,12 @@ class VenueLocation:
 
 @dataclass(frozen=True, slots=True)
 class GameWeather:
-    """A point-in-time forecast for a game's venue, or a recorded absence."""
+    """A point-in-time forecast for a game's venue, or a recorded absence.
+
+    NWS forecasts are not point-in-time-immutable the way a boxscore is: the
+    forecast changes as game time approaches, so every fetch is its own
+    snapshot with its own retrieved_at, never a value to overwrite in place.
+    """
 
     game_id: str
     status: AvailabilityStatus
@@ -313,7 +297,18 @@ class GameWeather:
 
 @dataclass(frozen=True, slots=True)
 class TeamSeasonStats:
-    """Raw season aggregates for one team, straight from the provider."""
+    """Raw season aggregates for one team, straight from the provider.
+
+    earned_runs (pitching stat "earnedRuns") excludes runs that scored due to
+    a fielding error; runs_allowed (pitching stat "runs") is the total, which
+    is what a run-prevention feature needs — earned_runs alone would
+    understate how many runs a team actually gives up.
+
+    Deliberately NOT a normalised model feature: no league-average scaling,
+    no offensive_index/run_prevention_index. Turning these into a model
+    feature is Fase 4 (feature store) work, with its own documented formula,
+    missing-value policy, and test — not something this record does for you.
+    """
 
     team_id: str
     team_name: str
