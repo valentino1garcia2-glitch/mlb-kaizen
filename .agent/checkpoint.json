@@ -23,20 +23,20 @@
     "7": "REAL_EVALUATION_RUN_2026-09-19_NO_EDGE_FOUND_YET",
     "8": "CORE_DONE_CLV_REAL_SNAPSHOTS_PENDING"
   },
-  "tests_passed": 81,
-  "tests_total": 81,
-  "last_verified_commit": "8ba9390",
+  "tests_passed": 113,
+  "tests_total": 113,
+  "last_verified_commit": "052719f",
   "current_blockers": [
     "live verification of SportsGameOdds requires key and network",
     "live verification of MLB team stats and NWS weather is still pending",
     "CLV requires reliable opening/closing market snapshots",
     "current features (run rates only) show no measurable edge over a naive constant-home-win-rate baseline -- see data/evaluation/first_real_evaluation_2026-09-19.md"
   ],
-  "next_action": "add probable_pitcher-based features (already in the real dataset, unused so far), then re-run walk_forward_evaluate and compare against the real baseline (Brier 0.2490-0.2494)",
+  "next_action": "diagnose calibration and non-redundant signal before beginning the lineup experiment; preserve E3 as the current best verified configuration",
   "analyst_mode": "DONE",
   "engineering_status": "8/8 phase deliverables implemented; external evidence gates remain",
-  "empirical_validation": "FIRST_REAL_RUN_COMPLETE_NO_EDGE_DEMONSTRATED",
-  "notes": "2026-09-19: ingested a real, independently-audited 2022-2026 dataset (12,045 games) and ran a real walk-forward evaluation. Neither the Poisson baseline nor the Random Forest challenger clearly beats a naive constant-probability reference on this fold. Do not call the model validated -- this result says the opposite: no edge yet with current features. See data/evaluation/first_real_evaluation_2026-09-19.md.",
+  "empirical_validation": "E3_OUT_OF_SAMPLE_IMPROVEMENT_REPRODUCED_NOT_PRODUCTION_VALIDATED",
+  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure and achieved Brier 0.2463 on untouched 2026 versus 0.2490 naive. Pitcher, park and bullpen features showed no incremental measurable improvement. Do not call the model validated for production.",
   "recovery": {
     "integrated_at": "2026-10-03",
     "source_archive": "MLB_KAIZEN.zip",
