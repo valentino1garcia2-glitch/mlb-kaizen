@@ -217,3 +217,24 @@ def load_game_venues_v2(paths: Sequence[Path]) -> dict[str, str]:
             except (KeyError, TypeError, json.JSONDecodeError) as exc:
                 raise ValueError(f"{path}:{line_number}: invalid v2 venue row: {exc}") from exc
     return venues
+
+
+def load_pitcher_bullpen_lines(paths: Sequence[Path]) -> list[PitcherGameLine]:
+    """Read non-starter pitcher appearances for the point-in-time bullpen view."""
+    lines: list[PitcherGameLine] = []
+    for path in paths:
+        for line_number, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            if not raw_line.strip(): continue
+            try:
+                row = json.loads(raw_line)
+                if row.get("is_actual_starter") is True: continue
+                lines.append(PitcherGameLine(
+                    game_id=f"mlb:{row['game_id']}", pitcher_id=str(row['pitcher_id']),
+                    pitcher_name=str(row['pitcher_name']), side=str(row['side']),
+                    innings_pitched=str(row['innings_pitched']), runs_allowed=int(row['runs']),
+                    earned_runs=int(row['earned_runs']), is_actual_starter=False,
+                    provenance=DataProvenance(source=f"external pitcher collector: {row.get('source', 'unknown')}", retrieved_at=_parse_timestamp(row['retrieved_at']), status=AvailabilityStatus.AVAILABLE),
+                ))
+            except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+                raise ValueError(f"{path}:{line_number}: invalid bullpen row: {exc}") from exc
+    return lines

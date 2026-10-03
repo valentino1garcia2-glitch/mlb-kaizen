@@ -3,6 +3,15 @@
 Decisiones con `Status: LOCKED` no se vuelven a debatir sin una tarea
 explícita que las reabra.
 
+## DD-015 — Regularización Poisson seleccionada sin tocar la temporada de prueba
+
+La configuración por defecto usa `alpha=0.0001`, elegida con 2022–2024 para
+entrenar y 2025 para validar. La temporada 2026 se mantuvo fuera de esa
+decisión y se usó una sola vez para comprobarla. Esto sustituyó `alpha=1.0`,
+que comprimía casi por completo la información de equipo. No convierte al
+modelo en validado para producción: es una mejora reproducida en una sola
+temporada fuera de muestra.
+
 ---
 
 **ID:** DD-001

@@ -135,7 +135,7 @@ LIVE / SNAPSHOT / MANUAL / HYBRID INPUT
 ## Última verificación
 
 ```text
-81 / 81 PASS (2 skipped: jsonschema no instalado en este entorno)
+113 / 113 PASS
 ```
 
 Comando:
@@ -176,6 +176,13 @@ usar probable_pitchers (ya en el dataset, sin usar en features)
 → recalibración de probabilidad (Platt/isotonic)
 → volver a correr walk-forward y comparar contra esta baseline real (Brier 0.2490-0.2494)
 ```
+
+## Recuperación E2–E5 — 2026-10-03
+
+E3 corrigió la regularización del modelo Poisson y logró Brier 0.2463 frente
+a 0.2490 de la referencia en 2026. Pitcher, parque y bullpen no añadieron una
+mejora incremental demostrable. El siguiente paso es diagnosticar calibración
+e información no redundante antes de añadir lineups.
 
 ## Recuperación después de agotar contexto
 
