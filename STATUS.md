@@ -181,8 +181,16 @@ usar probable_pitchers (ya en el dataset, sin usar en features)
 
 E3 corrigió la regularización del modelo Poisson y logró Brier 0.2463 frente
 a 0.2490 de la referencia en 2026. Pitcher, parque y bullpen no añadieron una
-mejora incremental demostrable. El siguiente paso es diagnosticar calibración
-e información no redundante antes de añadir lineups.
+mejora incremental demostrable.
+
+## Diagnóstico de calibración — 2026-10-03
+
+Completado. El modelo E3 distingue partidos mejor que elegir siempre al local,
+pero sus probabilidades quedan comprimidas hacia 50%. Una calibración temporal
+basada en 2025 mejora Brier de 0.2463 a 0.2462 al medir 2026: mejora pequeña,
+todavía no validación de producción. Analyst Mode usa una fórmula fija distinta
+del modelo entrenado; antes de lineups debe cargar un artefacto entrenado de
+forma versionada.
 
 ## Recuperación después de agotar contexto
 
