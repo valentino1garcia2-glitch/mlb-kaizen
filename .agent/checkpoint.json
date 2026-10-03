@@ -23,9 +23,9 @@
     "7": "REAL_EVALUATION_RUN_2026-09-19_NO_EDGE_FOUND_YET",
     "8": "CORE_DONE_CLV_REAL_SNAPSHOTS_PENDING"
   },
-  "tests_passed": 113,
-  "tests_total": 113,
-  "last_verified_commit": "cb3539d",
+  "tests_passed": 116,
+  "tests_total": 116,
+  "last_verified_commit": "8e89302",
   "current_blockers": [
     "live verification of SportsGameOdds requires key and network",
     "live verification of MLB team stats and NWS weather is still pending",
@@ -35,8 +35,8 @@
   "next_action": "design and test a versioned trained-model artifact path for Analyst Mode; keep the fixed formula as an explicitly labelled experimental fallback before evaluating lineups",
   "analyst_mode": "DONE",
   "engineering_status": "8/8 phase deliverables implemented; external evidence gates remain",
-  "empirical_validation": "E3_OUT_OF_SAMPLE_IMPROVEMENT_REPRODUCED_NOT_PRODUCTION_VALIDATED",
-  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure and achieved Brier 0.2463 on untouched 2026 versus 0.2490 naive. Calibration fit only on 2025 improved 2026 Brier marginally to 0.2462. Analyst Mode currently uses a different fixed formula, so it does not automatically use E3. Do not call the model validated for production.",
+  "empirical_validation": "E3_PLUS_TEMPORAL_PLATT_CALIBRATION_MODEST_OOS_IMPROVEMENT_NOT_PRODUCTION_VALIDATED",
+  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure and achieved Brier 0.2463 on untouched 2026 versus 0.2490 naive. Platt calibration was selected using 2024 fit and 2025 selection, then refit on 2025 and improved 2026 Brier marginally to 0.2462. Analyst Mode currently uses a different fixed formula, so it does not automatically use E3 or its calibration. Do not call the model validated for production.",
   "recovery": {
     "integrated_at": "2026-10-03",
     "source_archive": "MLB_KAIZEN.zip",
