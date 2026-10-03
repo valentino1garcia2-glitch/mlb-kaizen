@@ -128,16 +128,19 @@ class AnalysisService:
     def __init__(
         self,
         settings: Settings,
-        run_model: BaselineRunModel | None = None,
+        run_model: BaselineRunModel | object | None = None,
+        calibrator: object | None = None,
         database: KaizenDatabase | None = None,
     ) -> None:
         self.settings = settings
         self.run_model = run_model
+        self.calibrator = calibrator
         self.database = database
 
     def analyse(self, request: AnalysisRequest, persist: bool = False) -> AnalysisResult:
         run_model = self.run_model or BaselineRunModel(request.league_runs_per_team)
-        projection = run_model.project(request.game, request.home_profile, request.away_profile)
+        projection = (run_model.project_analysis(request) if hasattr(run_model, "project_analysis")
+                      else run_model.project(request.game, request.home_profile, request.away_profile))
         simulation = MonteCarloEngine(
             simulation_count=self.settings.simulation_count,
             random_seed=self.settings.random_seed,
@@ -154,7 +157,9 @@ class AnalysisService:
             probability_uncertainty=simulation.home_win_standard_error,
             mode=request.mode,
         )
-        comparison = self._compare_market(raw_probability, simulation, request.market)
+        calibrated_probability = self.calibrator.transform(raw_probability) if self.calibrator is not None else None
+        decision_probability = calibrated_probability if calibrated_probability is not None else raw_probability
+        comparison = self._compare_market(decision_probability, simulation, request.market)
         machine_pick = self._select_machine_pick(comparison.candidates)
         data_timestamp = max(
             request.home_profile.provenance.retrieved_at,
@@ -172,7 +177,7 @@ class AnalysisService:
             market=comparison,
             quality=quality,
             raw_probability=raw_probability,
-            calibrated_probability=None,
+            calibrated_probability=calibrated_probability,
             uncertainty=simulation.home_win_standard_error,
             model_version=projection.model_version,
             feature_version=projection.feature_version,

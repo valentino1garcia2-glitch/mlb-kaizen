@@ -135,7 +135,7 @@ LIVE / SNAPSHOT / MANUAL / HYBRID INPUT
 ## Última verificación
 
 ```text
-116 / 116 PASS
+118 / 118 PASS
 ```
 
 Comando:
@@ -191,6 +191,13 @@ basada en 2025 mejora Brier de 0.2463 a 0.2462 al medir 2026: mejora pequeña,
 todavía no validación de producción. Analyst Mode usa una fórmula fija distinta
 del modelo entrenado; antes de lineups debe cargar un artefacto entrenado de
 forma versionada.
+
+## Puente al modelo entrenado — 2026-10-03
+
+Analyst Mode ya puede recibir un artefacto local confiable del modelo Poisson
+E3 y un calibrador opcional, conservando la fórmula fija como fallback. La
+salida continúa etiquetada como experimental. Falta exponer esa selección de
+artefactos directamente en el comando de análisis.
 
 ## Selección temporal de calibración — 2026-10-03
 
