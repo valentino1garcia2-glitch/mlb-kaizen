@@ -25,18 +25,18 @@
   },
   "tests_passed": 120,
   "tests_total": 120,
-  "last_verified_commit": "6ad1fb2",
+  "last_verified_commit": "425e109",
   "current_blockers": [
     "live verification of SportsGameOdds requires key and network",
     "live verification of MLB team stats and NWS weather is still pending",
     "CLV requires reliable opening/closing market snapshots",
     "current features (run rates only) show no measurable edge over a naive constant-home-win-rate baseline -- see data/evaluation/first_real_evaluation_2026-09-19.md"
   ],
-  "next_action": "make trusted Platt calibration artifact creation reproducible from the command line, then decide whether to begin the lineup experiment",
+  "next_action": "E6 preflight only: audit historical lineup data for timestamps proving availability before each game; do not build lineup features until that evidence passes",
   "analyst_mode": "DONE",
   "engineering_status": "8/8 phase deliverables implemented; external evidence gates remain",
   "empirical_validation": "E3_PLUS_TEMPORAL_PLATT_CALIBRATION_MODEST_OOS_IMPROVEMENT_NOT_PRODUCTION_VALIDATED",
-  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure and achieved Brier 0.2463 on untouched 2026 versus 0.2490 naive. Platt calibration was selected using 2024 fit and 2025 selection, then refit on 2025 and improved 2026 Brier marginally to 0.2462. Commit e935ab0 bridges a trusted local E3 trained artifact (and optional Platt calibration) into Analyst Mode; this block exposes both choices through analyze while retaining EXPERIMENTAL status. Do not call the model validated for production.",
+  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure and achieved Brier 0.2463 on untouched 2026 versus 0.2490 naive. Platt calibration was selected using 2024 fit and 2025 selection, then refit on 2025 and improved 2026 Brier marginally to 0.2462. The 2026-10-03 pre-E6 audit found E3 coherent enough for a lineup-data preflight: bullpen and park are mostly absorbed by team prevention, starter may be representation-limited, and home probability remains modestly undercalibrated. Do not call the model validated for production.",
   "recovery": {
     "integrated_at": "2026-10-03",
     "source_archive": "MLB_KAIZEN.zip",

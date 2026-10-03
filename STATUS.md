@@ -1,7 +1,7 @@
 # STATUS.md — MLB KAIZEN checkpoint
 
 fecha: 2026-10-03
-commit: 6ad1fb2
+commit: 425e109
 
 ## Integración de recuperación — 2026-10-03
 
@@ -135,7 +135,7 @@ LIVE / SNAPSHOT / MANUAL / HYBRID INPUT
 ## Última verificación
 
 ```text
-118 / 118 PASS
+120 / 120 PASS
 ```
 
 Comando:
@@ -213,6 +213,21 @@ Ambos son opcionales y solo se cargan desde archivos locales confiables. Incluso
 con los artefactos, el informe sigue marcado como **experimental**: conecta el
 trabajo evaluado con el análisis diario, pero no afirma validación de producción.
 Suite: 120/120.
+
+## Auditoría pre-E6 — 2026-10-03
+
+E0--E5 fueron auditados sin reentrenar ni ajustar parámetros. E3 mantiene la
+única mejora medible: la reducción de regularización permitió usar la señal de
+equipo ya presente. Los resultados nulos de bullpen y parque se explican sobre
+todo por información ya absorbida por prevención de equipo; el abridor conserva
+una explicación abierta de representación/modelo. E3 sí separa partidos, pero
+subestima la tasa local media (50.43% predicho frente a 53.11% observado) y
+permanece comprimido hacia 50%; Platt mejora sólo de 0.2463 a 0.2462 Brier.
+
+**Decisión: READY_FOR_E6**, sólo para auditar y diseñar un dataset histórico de
+lineup con timestamps anteriores al partido. No se implementa E6 en este bloque,
+ni se etiqueta el modelo como validado o rentable. Detalle reproducible en
+`docs/experiments/2026-10-03-pre-e6-audit.md`.
 
 ## Recuperación después de agotar contexto
 

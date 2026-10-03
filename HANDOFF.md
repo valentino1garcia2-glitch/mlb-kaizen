@@ -892,3 +892,23 @@ fuera de muestra fue pequeña y todavía no equivale a validación de producció
 Verificación: 120/120 tests. Próxima acción: hacer reproducible la creación del
 artefacto de calibración desde el flujo de línea de comandos y decidir, con esa
 base operativa, si iniciar el experimento de lineups (E6).
+
+## 24. Auditoría pre-E6 (2026-10-03)
+
+Se reconstruyó E0--E5 sin cambiar código de modelo ni correr E6. E3 sigue
+siendo la única mejora demostrada: reducir `alpha` de 1.0 a 0.0001, elegido
+con 2022--2024/2025 sin tocar 2026, llevó Brier a 0.2463 frente a 0.2491 de la
+referencia ingenua. E2 (abridor), E4 (parque) y E5 (bullpen) no añadieron una
+mejora incremental demostrable.
+
+El diagnóstico muestra que bullpen y parque están parcialmente absorbidos por
+la prevención de equipo (correlaciones aproximadas 0.87--0.88 y 0.70);
+abridor tiene solapamiento moderado (0.38), por lo que queda abierta la
+limitación de representación lineal. E3 discrimina modestamente (55.09% de
+accuracy vs 53.11% de siempre elegir local), pero su media de probabilidad local
+(50.43%) sigue bajo la tasa observada (53.11%). Platt mejora Brier sólo de
+0.2463 a 0.2462.
+
+**Decisión: READY_FOR_E6** únicamente para auditar disponibilidad histórica
+point-in-time de lineups. No equivale a modelo validado ni rentable. Registro
+completo: `docs/experiments/2026-10-03-pre-e6-audit.md`.

@@ -12,3 +12,11 @@
 Solo E3 se conserva como mejora demostrada. E2, E4 y E5 quedan como
 experimentos negativos: su código permite volver a examinarlos, pero no deben
 presentarse como una ventaja predictiva comprobada.
+
+## Auditoría pre-E6 — 2026-10-03
+
+La auditoría completa está en
+[`docs/experiments/2026-10-03-pre-e6-audit.md`](../experiments/2026-10-03-pre-e6-audit.md).
+La decisión es **READY_FOR_E6** únicamente para auditar/diseñar datos de
+lineup point-in-time. E3 sigue siendo la referencia; E2, E4 y E5 no se
+reclasifican como mejoras, y no se afirma validación ni rentabilidad.
