@@ -7,9 +7,9 @@ Recover the authoritative E2–E5 repository state before planning E6; do not mo
 ## Verified state
 
 - Last verified: 2026-10-01 during this recovery.
-- Git: the supplied foundation archive had no commits or remote. This recovery block creates its first local baseline commit; no remote is configured.
+- Git: local baseline commit `cea1bb5`; GitHub remote `origin` is configured and its initial backup is being verified.
 - Tests: `C:\\Users\\user\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe -m unittest discover -s tests -t . -v` — 9/9 PASS. `python -m pytest` is not available in the bundled runtime.
-- Remote backup: not configured.
+- Remote backup: configured at `https://github.com/valentino1garcia2-glitch/mlb-kaizen.git`; initial push pending verification.
 - Code provenance: `sources/MLB KAIZEN.zip`, SHA-256 `DA17B6FD1EF5D1729B9D380E65153A47230A4BB49B5D5399F09D44880BA90CB2`.
 - Dataset provenance: `sources/mlb_kaizen_dataset (1).zip`, SHA-256 `A53A68568D70B4E3345CC89FF78A8D38B65D73A618F96E30D52286791A902D3A`; copied locally to `data/mlb_kaizen_data/` and ignored by Git.
 
