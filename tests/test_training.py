@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 
 from mlb_kaizen.training.dataset import HistoricalGameRow, MODEL_FEATURES, load_jsonl, save_jsonl
+from mlb_kaizen.training.baseline import DEFAULT_ALPHA, PoissonRunModel, fit_poisson_baseline
 from mlb_kaizen.training.trainers import PoissonTrainer, RandomForestTrainer
 
 
@@ -76,3 +77,15 @@ class TrainingTests(unittest.TestCase):
         self.assertEqual(trainer.feature_names, MODEL_FEATURES)
         trainer.fit(rows())
         self.assertEqual(trainer.model.feature_names, MODEL_FEATURES)
+
+    def test_poisson_default_alpha_is_the_validated_value(self) -> None:
+        self.assertEqual(DEFAULT_ALPHA, 0.0001)
+        self.assertEqual(PoissonTrainer().alpha, DEFAULT_ALPHA)
+
+    def test_poisson_default_fit_uses_the_validated_alpha(self) -> None:
+        model = fit_poisson_baseline(rows())
+        self.assertEqual(model.home_model.alpha, DEFAULT_ALPHA)
+        self.assertEqual(model.away_model.alpha, DEFAULT_ALPHA)
+
+    def test_poisson_model_version_marks_the_regularisation_change(self) -> None:
+        self.assertEqual(PoissonRunModel.model_version, "MLB-KAIZEN-POISSON-RUNS-0.2.0")

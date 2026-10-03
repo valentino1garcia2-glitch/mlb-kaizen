@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from mlb_kaizen.models.ml import fit_gradient_tree_model
-from mlb_kaizen.training.baseline import fit_poisson_baseline
+from mlb_kaizen.training.baseline import DEFAULT_ALPHA, fit_poisson_baseline
 from mlb_kaizen.training.dataset import MODEL_FEATURES
 
 
 class PoissonTrainer:
-    def __init__(self, alpha: float = 1.0, feature_names=MODEL_FEATURES) -> None:
+    def __init__(self, alpha: float = DEFAULT_ALPHA, feature_names=MODEL_FEATURES) -> None:
         self.alpha = alpha
         self.feature_names = tuple(feature_names)
         self.model = None

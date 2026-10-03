@@ -7,3 +7,9 @@ __pycache__/
 .env
 data/*.sqlite3
 data/cache/
+# Reproducible local inputs recovered from the user-provided v2 archives.
+# Their archive names, schemas and checksums are recorded in project docs;
+# do not commit large duplicate normalized or derived datasets.
+data/external/mlb_kaizen_games_v2_2026-09-20/
+data/external/mlb_kaizen_pitchers_2026-09-20/
+data/historical/2022_2026_point_in_time_with_*.jsonl

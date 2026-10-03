@@ -6,6 +6,10 @@ from dataclasses import dataclass
 
 from mlb_kaizen.training.dataset import HistoricalGameRow, MODEL_FEATURES
 
+# Selected with train=2022-2024 and validation=2025 only.  The untouched
+# 2026 season is reserved for the final out-of-sample check; see DD-015.
+DEFAULT_ALPHA = 0.0001
+
 try:
     from sklearn.linear_model import PoissonRegressor
 except ImportError as exc:  # pragma: no cover - exercised only in minimal installs
@@ -24,7 +28,7 @@ class RunPrediction:
 class PoissonRunModel:
     """Two regularised Poisson regressors, one for each team's run target."""
 
-    model_version = "MLB-KAIZEN-POISSON-RUNS-0.1.0"
+    model_version = "MLB-KAIZEN-POISSON-RUNS-0.2.0"
     feature_version = "DATASET-RUN-FEATURES-1"
 
     def __init__(self, home_model, away_model, feature_names=MODEL_FEATURES) -> None:
@@ -42,7 +46,7 @@ class PoissonRunModel:
 
 def fit_poisson_baseline(
     rows: list[HistoricalGameRow] | tuple[HistoricalGameRow, ...],
-    alpha: float = 1.0,
+    alpha: float = DEFAULT_ALPHA,
     feature_names=MODEL_FEATURES,
 ) -> PoissonRunModel:
     """Fit a regularised Poisson model from prior-only rows."""
@@ -57,8 +61,8 @@ def fit_poisson_baseline(
     x = [[float(row.features[name]) for name in feature_names] for row in rows]
     home = [row.home_runs for row in rows]
     away = [row.away_runs for row in rows]
-    home_model = PoissonRegressor(alpha=alpha, max_iter=1_000)
-    away_model = PoissonRegressor(alpha=alpha, max_iter=1_000)
+    home_model = PoissonRegressor(alpha=alpha, max_iter=10_000)
+    away_model = PoissonRegressor(alpha=alpha, max_iter=10_000)
     home_model.fit(x, home)
     away_model.fit(x, away)
     return PoissonRunModel(home_model, away_model, feature_names)
