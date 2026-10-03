@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from mlb_kaizen.domain.models import CompletedGameResult
+from mlb_kaizen.domain.models import CompletedGameResult, PitcherGameLine
 from mlb_kaizen.features.run_profile import run_rate_index
 from mlb_kaizen.training.dataset import HistoricalGameRow
 
@@ -46,6 +46,13 @@ class _TeamAccumulator:
     runs_scored: int = 0
     runs_allowed: int = 0
     games_played: int = 0
+
+
+@dataclass
+class _PitcherAccumulator:
+    earned_runs: int = 0
+    outs: int = 0
+    starts: int = 0
 
 
 def build_point_in_time_rows(
@@ -128,5 +135,126 @@ def build_point_in_time_rows(
         team_totals[game.away_team_id] = away
         league_runs += game.home_runs + game.away_runs
         league_games += 2
+
+    return rows
+
+
+def _parse_innings_pitched_to_outs(value: str) -> int:
+    """Convert MLB's ``5.1``/``5.2`` innings notation into outs.
+
+    The digit after the decimal is outs in the inning, not a base-10 fraction.
+    """
+
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("innings_pitched must be a non-empty string")
+    parts = value.strip().split(".")
+    if len(parts) > 2 or not parts[0].isdigit():
+        raise ValueError(f"invalid innings_pitched: {value!r}")
+    whole = int(parts[0])
+    remainder = 0 if len(parts) == 1 else parts[1]
+    if remainder not in (0, "0", "1", "2"):
+        raise ValueError(f"invalid innings_pitched fraction: {value!r}")
+    return whole * 3 + int(remainder)
+
+
+def build_point_in_time_rows_with_starters(
+    games: list[CompletedGameResult],
+    starters: list[PitcherGameLine],
+    *,
+    minimum_prior_games: int = MINIMUM_PRIOR_GAMES,
+    minimum_league_games_for_average: int = MINIMUM_LEAGUE_GAMES_FOR_AVERAGE,
+    minimum_prior_starts: int = 1,
+    minimum_league_outs_for_average: int = 90,
+    home_advantage: float = DEFAULT_HOME_ADVANTAGE,
+) -> list[HistoricalGameRow]:
+    """Build team and actual-starter features using only earlier games."""
+
+    if minimum_prior_games < 1:
+        raise ValueError("minimum_prior_games must be at least 1")
+    if minimum_league_games_for_average < 1:
+        raise ValueError("minimum_league_games_for_average must be at least 1")
+    if minimum_prior_starts < 1:
+        raise ValueError("minimum_prior_starts must be at least 1")
+    if minimum_league_outs_for_average < 1:
+        raise ValueError("minimum_league_outs_for_average must be at least 1")
+
+    starter_by_game_side: dict[tuple[str, str], PitcherGameLine] = {}
+    for starter in starters:
+        if starter.is_actual_starter:
+            key = (starter.game_id, starter.side)
+            if key in starter_by_game_side:
+                raise ValueError(f"duplicate actual starter for {starter.game_id}/{starter.side}")
+            starter_by_game_side[key] = starter
+
+    team_totals: dict[str, _TeamAccumulator] = {}
+    pitcher_totals: dict[str, _PitcherAccumulator] = {}
+    league_runs = league_games = 0
+    league_starter_earned_runs = league_starter_outs = 0
+    rows: list[HistoricalGameRow] = []
+
+    for game in sorted(games, key=lambda item: (item.start_time, item.game_id)):
+        home = team_totals.get(game.home_team_id, _TeamAccumulator())
+        away = team_totals.get(game.away_team_id, _TeamAccumulator())
+        home_starter = starter_by_game_side.get((game.game_id, "home"))
+        away_starter = starter_by_game_side.get((game.game_id, "away"))
+        home_history = pitcher_totals.get(home_starter.pitcher_id, _PitcherAccumulator()) if home_starter else None
+        away_history = pitcher_totals.get(away_starter.pitcher_id, _PitcherAccumulator()) if away_starter else None
+
+        eligible = (
+            home_starter is not None
+            and away_starter is not None
+            and home_history is not None
+            and away_history is not None
+            and home.games_played >= minimum_prior_games
+            and away.games_played >= minimum_prior_games
+            and league_games >= minimum_league_games_for_average
+            and home_history.starts >= minimum_prior_starts
+            and away_history.starts >= minimum_prior_starts
+            and home_history.outs > 0
+            and away_history.outs > 0
+            and league_starter_outs >= minimum_league_outs_for_average
+        )
+        if eligible:
+            league_average = league_runs / league_games
+            league_starter_era = 27 * league_starter_earned_runs / league_starter_outs
+            features = {
+                "home_offensive_index": run_rate_index(home.runs_scored / home.games_played, league_average),
+                "away_offensive_index": run_rate_index(away.runs_scored / away.games_played, league_average),
+                "home_run_prevention_index": run_rate_index(home.runs_allowed / home.games_played, league_average),
+                "away_run_prevention_index": run_rate_index(away.runs_allowed / away.games_played, league_average),
+                "home_advantage": home_advantage,
+                "home_starter_era_index": (27 * home_history.earned_runs / home_history.outs) / league_starter_era,
+                "away_starter_era_index": (27 * away_history.earned_runs / away_history.outs) / league_starter_era,
+            }
+            rows.append(HistoricalGameRow(
+                game_id=game.game_id,
+                official_date=game.official_date,
+                prediction_timestamp=game.start_time,
+                feature_timestamp=game.start_time,
+                features=features,
+                home_runs=game.home_runs,
+                away_runs=game.away_runs,
+            ))
+
+        # Team totals always advance.  Pitcher totals advance only where an
+        # actual-starter record exists; a missing record must never be guessed.
+        home.runs_scored += game.home_runs
+        home.runs_allowed += game.away_runs
+        home.games_played += 1
+        away.runs_scored += game.away_runs
+        away.runs_allowed += game.home_runs
+        away.games_played += 1
+        team_totals[game.home_team_id], team_totals[game.away_team_id] = home, away
+        league_runs += game.home_runs + game.away_runs
+        league_games += 2
+        for starter in (home_starter, away_starter):
+            if starter is None:
+                continue
+            history = pitcher_totals.setdefault(starter.pitcher_id, _PitcherAccumulator())
+            history.earned_runs += starter.earned_runs
+            history.outs += _parse_innings_pitched_to_outs(starter.innings_pitched)
+            history.starts += 1
+            league_starter_earned_runs += starter.earned_runs
+            league_starter_outs += _parse_innings_pitched_to_outs(starter.innings_pitched)
 
     return rows

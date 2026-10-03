@@ -9,6 +9,7 @@ from mlb_kaizen.domain.models import (
     GameWeather,
     LineupSlot,
     ProbablePitcher,
+    PitcherGameLine,
     TeamRunProfile,
     TeamSeasonStats,
 )
@@ -139,5 +140,26 @@ def completed_game(
         away_team_name=f"Away {away_team_id}",
         home_runs=home_runs,
         away_runs=away_runs,
+        provenance=provenance(),
+    )
+
+
+def starter_line(
+    game_id: str = "mlb:1",
+    pitcher_id: str = "501",
+    side: str = "home",
+    earned_runs: int = 2,
+    runs_allowed: int | None = None,
+    innings_pitched: str = "6.0",
+) -> PitcherGameLine:
+    return PitcherGameLine(
+        game_id=game_id,
+        pitcher_id=pitcher_id,
+        pitcher_name=f"Pitcher {pitcher_id}",
+        side=side,
+        innings_pitched=innings_pitched,
+        runs_allowed=earned_runs if runs_allowed is None else runs_allowed,
+        earned_runs=earned_runs,
+        is_actual_starter=True,
         provenance=provenance(),
     )

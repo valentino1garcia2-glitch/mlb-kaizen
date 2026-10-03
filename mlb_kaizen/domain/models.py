@@ -145,6 +145,38 @@ class CompletedGameResult:
 
 
 @dataclass(frozen=True, slots=True)
+class PitcherGameLine:
+    """One pitcher's final line in a completed game.
+
+    This is deliberately a post-game record.  Dataset builders must only
+    add it to a pitcher's running history *after* producing the row for that
+    game, so a historical prediction never benefits from its own outcome.
+    """
+
+    game_id: str
+    pitcher_id: str
+    pitcher_name: str
+    side: str
+    innings_pitched: str
+    runs_allowed: int
+    earned_runs: int
+    is_actual_starter: bool
+    provenance: DataProvenance
+
+    def __post_init__(self) -> None:
+        if not self.game_id or not self.pitcher_id or not self.pitcher_name:
+            raise ValueError("game and pitcher identity are required")
+        if self.side not in {"home", "away"}:
+            raise ValueError("side must be 'home' or 'away'")
+        if not self.innings_pitched:
+            raise ValueError("innings_pitched is required")
+        if self.runs_allowed < 0 or self.earned_runs < 0:
+            raise ValueError("pitcher runs cannot be negative")
+        if self.runs_allowed < self.earned_runs:
+            raise ValueError("runs_allowed cannot be less than earned_runs")
+
+
+@dataclass(frozen=True, slots=True)
 class TeamRunProfile:
     """Normalised, timestamped team inputs for the transparent run model.
 

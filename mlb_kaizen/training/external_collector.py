@@ -21,7 +21,12 @@ import json
 from pathlib import Path
 from typing import Sequence
 
-from mlb_kaizen.domain.models import AvailabilityStatus, CompletedGameResult, DataProvenance
+from mlb_kaizen.domain.models import (
+    AvailabilityStatus,
+    CompletedGameResult,
+    DataProvenance,
+    PitcherGameLine,
+)
 
 #: The only schema_version this loader understands. A file claiming a
 #: different version is rejected rather than parsed optimistically -- an
@@ -106,3 +111,92 @@ def _parse_timestamp(value: object) -> datetime:
     if not isinstance(value, str):
         raise ValueError("timestamp must be a string")
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def load_completed_games_v2(paths: Sequence[Path]) -> list[CompletedGameResult]:
+    """Read the flat 2026-09-20 collector format.
+
+    This collector intentionally has a separate loader: it uses flat score
+    fields rather than the older collector's nested ``score`` object.  Final
+    records without a published score are legitimate API records and are
+    excluded, never guessed as 0-0.
+    """
+
+    games: list[CompletedGameResult] = []
+    seen_ids: set[str] = set()
+    for path in paths:
+        for line_number, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            if not raw_line.strip():
+                continue
+            try:
+                row = json.loads(raw_line)
+                if row.get("status") != "Final":
+                    continue
+                home_runs, away_runs = row.get("home_score"), row.get("away_score")
+                if home_runs is None or away_runs is None:
+                    continue
+                game_id = f"mlb:{row['game_id']}"
+                if game_id in seen_ids:
+                    continue
+                game = CompletedGameResult(
+                    game_id=game_id,
+                    official_date=date.fromisoformat(str(row["date"])),
+                    start_time=_parse_timestamp(row["game_datetime"]),
+                    home_team_id=str(row["home_team_id"]),
+                    home_team_name=str(row["home_team_name"]),
+                    away_team_id=str(row["away_team_id"]),
+                    away_team_name=str(row["away_team_name"]),
+                    home_runs=int(home_runs),
+                    away_runs=int(away_runs),
+                    provenance=DataProvenance(
+                        source=f"external collector v2: {row.get('source', 'unknown')}",
+                        retrieved_at=_parse_timestamp(row["retrieved_at"]),
+                        status=AvailabilityStatus.AVAILABLE,
+                        source_url=row.get("request_url"),
+                    ),
+                )
+            except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+                raise ValueError(f"{path}:{line_number}: invalid v2 game row: {exc}") from exc
+            seen_ids.add(game_id)
+            games.append(game)
+    return games
+
+
+def load_pitcher_starter_lines(paths: Sequence[Path]) -> list[PitcherGameLine]:
+    """Read real pitcher lines and retain only the actual starter per side."""
+
+    lines: list[PitcherGameLine] = []
+    seen_game_sides: set[tuple[str, str]] = set()
+    for path in paths:
+        for line_number, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            if not raw_line.strip():
+                continue
+            try:
+                row = json.loads(raw_line)
+                if row.get("is_actual_starter") is not True:
+                    continue
+                game_id = f"mlb:{row['game_id']}"
+                side = str(row["side"])
+                key = (game_id, side)
+                if key in seen_game_sides:
+                    raise ValueError("duplicate actual starter for game side")
+                line = PitcherGameLine(
+                    game_id=game_id,
+                    pitcher_id=str(row["pitcher_id"]),
+                    pitcher_name=str(row["pitcher_name"]),
+                    side=side,
+                    innings_pitched=str(row["innings_pitched"]),
+                    runs_allowed=int(row["runs"]),
+                    earned_runs=int(row["earned_runs"]),
+                    is_actual_starter=True,
+                    provenance=DataProvenance(
+                        source=f"external pitcher collector: {row.get('source', 'unknown')}",
+                        retrieved_at=_parse_timestamp(row["retrieved_at"]),
+                        status=AvailabilityStatus.AVAILABLE,
+                    ),
+                )
+            except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+                raise ValueError(f"{path}:{line_number}: invalid pitcher row: {exc}") from exc
+            seen_game_sides.add(key)
+            lines.append(line)
+    return lines

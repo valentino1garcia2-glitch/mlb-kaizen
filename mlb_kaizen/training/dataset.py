@@ -66,7 +66,7 @@ def load_jsonl(path: Path) -> tuple[HistoricalGameRow, ...]:
                 official_date=date.fromisoformat(str(payload["official_date"])),
                 prediction_timestamp=_parse_timestamp(payload["prediction_timestamp"]),
                 feature_timestamp=_parse_timestamp(payload["feature_timestamp"]),
-                features={name: float(payload["features"][name]) for name in MODEL_FEATURES},
+                features={name: float(value) for name, value in payload["features"].items()},
                 home_runs=int(payload["home_runs"]),
                 away_runs=int(payload["away_runs"]),
             )
