@@ -200,3 +200,20 @@ def load_pitcher_starter_lines(paths: Sequence[Path]) -> list[PitcherGameLine]:
             seen_game_sides.add(key)
             lines.append(line)
     return lines
+
+
+def load_game_venues_v2(paths: Sequence[Path]) -> dict[str, str]:
+    """Return raw v2 venue names keyed by game id; model rules canonicalise later."""
+    venues: dict[str, str] = {}
+    for path in paths:
+        for line_number, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            if not raw_line.strip():
+                continue
+            try:
+                row = json.loads(raw_line)
+                venue = row.get("venue")
+                if venue:
+                    venues[f"mlb:{row['game_id']}"] = str(venue)
+            except (KeyError, TypeError, json.JSONDecodeError) as exc:
+                raise ValueError(f"{path}:{line_number}: invalid v2 venue row: {exc}") from exc
+    return venues

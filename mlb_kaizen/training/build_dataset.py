@@ -39,6 +39,13 @@ MINIMUM_PRIOR_GAMES = 1
 #: point-in-time league average isn't a wildly noisy 1-2 game figure. This is
 #: a documented default, not a fitted threshold.
 MINIMUM_LEAGUE_GAMES_FOR_AVERAGE = 10
+MINIMUM_GAMES_AT_VENUE = 20
+
+CANONICAL_VENUE_NAMES = {
+    "UNIQLO Field at Dodger Stadium": "Dodger Stadium",
+    "Rate Field": "Guaranteed Rate Field",
+    "Daikin Park": "Minute Maid Park",
+}
 
 
 @dataclass
@@ -53,6 +60,17 @@ class _PitcherAccumulator:
     earned_runs: int = 0
     outs: int = 0
     starts: int = 0
+
+
+@dataclass
+class _VenueAccumulator:
+    runs: int = 0
+    games: int = 0
+
+
+def canonical_venue_name(name: str) -> str:
+    """Merge documented sponsorship renames, never genuine relocations."""
+    return CANONICAL_VENUE_NAMES.get(name, name)
 
 
 def build_point_in_time_rows(
@@ -257,4 +275,43 @@ def build_point_in_time_rows_with_starters(
             league_starter_earned_runs += starter.earned_runs
             league_starter_outs += _parse_innings_pitched_to_outs(starter.innings_pitched)
 
+    return rows
+
+
+def build_point_in_time_rows_with_park_factor(
+    games: list[CompletedGameResult], venues: dict[str, str], *,
+    minimum_prior_games: int = MINIMUM_PRIOR_GAMES,
+    minimum_league_games_for_average: int = MINIMUM_LEAGUE_GAMES_FOR_AVERAGE,
+    minimum_games_at_venue: int = MINIMUM_GAMES_AT_VENUE,
+    home_advantage: float = DEFAULT_HOME_ADVANTAGE,
+) -> list[HistoricalGameRow]:
+    """Build team features plus a prior-only empirical park run factor."""
+    if minimum_prior_games < 1 or minimum_league_games_for_average < 1 or minimum_games_at_venue < 1:
+        raise ValueError("all park-factor thresholds must be positive")
+    teams: dict[str, _TeamAccumulator] = {}
+    parks: dict[str, _VenueAccumulator] = {}
+    league_runs = league_games = 0
+    rows: list[HistoricalGameRow] = []
+    for game in sorted(games, key=lambda item: (item.start_time, item.game_id)):
+        home, away = teams.get(game.home_team_id, _TeamAccumulator()), teams.get(game.away_team_id, _TeamAccumulator())
+        raw_venue = venues.get(game.game_id)
+        venue = canonical_venue_name(raw_venue) if raw_venue else None
+        park = parks.get(venue, _VenueAccumulator()) if venue else None
+        if (venue and park and home.games_played >= minimum_prior_games and away.games_played >= minimum_prior_games
+                and league_games >= minimum_league_games_for_average and park.games >= minimum_games_at_venue):
+            league_average = league_runs / league_games
+            rows.append(HistoricalGameRow(game.game_id, game.official_date, game.start_time, game.start_time, {
+                "home_offensive_index": run_rate_index(home.runs_scored / home.games_played, league_average),
+                "away_offensive_index": run_rate_index(away.runs_scored / away.games_played, league_average),
+                "home_run_prevention_index": run_rate_index(home.runs_allowed / home.games_played, league_average),
+                "away_run_prevention_index": run_rate_index(away.runs_allowed / away.games_played, league_average),
+                "home_advantage": home_advantage,
+                "park_run_factor_index": run_rate_index(park.runs / park.games / 2, league_average),
+            }, game.home_runs, game.away_runs))
+        home.runs_scored += game.home_runs; home.runs_allowed += game.away_runs; home.games_played += 1
+        away.runs_scored += game.away_runs; away.runs_allowed += game.home_runs; away.games_played += 1
+        teams[game.home_team_id], teams[game.away_team_id] = home, away
+        league_runs += game.home_runs + game.away_runs; league_games += 2
+        if venue:
+            park = parks.setdefault(venue, _VenueAccumulator()); park.runs += game.home_runs + game.away_runs; park.games += 1
     return rows
