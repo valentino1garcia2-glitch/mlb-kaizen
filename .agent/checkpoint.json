@@ -1,5 +1,5 @@
 {
-  "checkpoint_date": "2026-09-19",
+  "checkpoint_date": "2026-10-03",
   "engineering_phases_covered": [
     1,
     2,
@@ -25,7 +25,7 @@
   },
   "tests_passed": 81,
   "tests_total": 81,
-  "last_verified_commit": "e12e17a",
+  "last_verified_commit": "8ba9390",
   "current_blockers": [
     "live verification of SportsGameOdds requires key and network",
     "live verification of MLB team stats and NWS weather is still pending",
@@ -36,8 +36,7 @@
   "analyst_mode": "DONE",
   "engineering_status": "8/8 phase deliverables implemented; external evidence gates remain",
   "empirical_validation": "FIRST_REAL_RUN_COMPLETE_NO_EDGE_DEMONSTRATED",
-  "notes": "2026-09-19: ingested a real, independently-audited 2022-2026 dataset (12,045 games) and ran a real walk-forward evaluation. Neither the Poisson baseline nor the Random Forest challenger clearly beats a naive constant-probability reference on this fold. Do not call the model validated -- this result says the opposite: no edge yet with current features. See data/evaluation/first_real_evaluation_2026-09-19.md."
-  ,
+  "notes": "2026-09-19: ingested a real, independently-audited 2022-2026 dataset (12,045 games) and ran a real walk-forward evaluation. Neither the Poisson baseline nor the Random Forest challenger clearly beats a naive constant-probability reference on this fold. Do not call the model validated -- this result says the opposite: no edge yet with current features. See data/evaluation/first_real_evaluation_2026-09-19.md.",
   "recovery": {
     "integrated_at": "2026-10-03",
     "source_archive": "MLB_KAIZEN.zip",
