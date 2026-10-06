@@ -927,3 +927,26 @@ publica, pero sólo se puede usar en backtest si el snapshot registrado prueba
 `retrieved_at < game_start_time`. **Decisión: E6_DATA_BLOCKED**; no construir
 E6-B hasta recibir un histórico temporalmente verificable o empezar captura
 prospectiva. Detalle: `docs/experiments/2026-10-03-e6a-lineup-temporality-audit.md`.
+
+## 26. E7 — fuerza previa de rivales (2026-10-05)
+
+E6 no se forzó: continúa bloqueado porque no hay lineups históricos con
+timestamp pregame demostrable. En vez de esperar datos inexistentes, se usó
+una señal que sí puede construirse de manera point-in-time a partir de los
+resultados anteriores: el perfil promedio, ponderado por enfrentamientos, de
+los rivales que cada equipo ya enfrentó.
+
+`build_point_in_time_rows_with_opponent_strength` construye cuatro inputs:
+ofensiva y prevención de los rivales previos de local y visitante. Los
+acumuladores se actualizan tras construir cada fila; pruebas dirigidas cubren
+el marcador propio, un marcador futuro, umbrales y timestamps. La fórmula es
+`opponent_strength_formula_v1` y está documentada en
+`docs/features/opponent_strength.md`.
+
+Protocolo predefinido: elegir sólo con 2022–2024 → 2025 y abrir 2026 únicamente
+si Brier y log loss mejoraban frente a E3 en las mismas filas. La validación
+2025 pasó (Brier 0.245522→0.245235; log loss 0.684097→0.683492), por lo que se
+corrió una vez 2026 y también pasó (Brier 0.245949→0.245633; log loss
+0.684965→0.684313). E7 se mantiene como mejora experimental pequeña pero
+consistente; no declara el modelo validado ni rentable. Registro completo:
+`docs/experiments/2026-10-05-e7-opponent-strength.md`.

@@ -1,7 +1,7 @@
 # STATUS.md — MLB KAIZEN checkpoint
 
 fecha: 2026-10-03
-commit: 4c1b467
+commit: 64b4aa5
 
 ## Integración de recuperación — 2026-10-03
 
@@ -132,10 +132,29 @@ LIVE / SNAPSHOT / MANUAL / HYBRID INPUT
    Lo que sigue pendiente no es conseguir datos, sino mejorar features (pitcher/parque/rival) para
    que el modelo supere a la referencia ingenua.
 
+## E7 — fuerza previa de rivales (2026-10-05)
+
+**FACT:** E6 sigue bloqueado por los lineups históricos, pero los resultados
+históricos existentes sí permiten medir qué tan exigentes fueron los rivales
+que cada equipo ya enfrentó. E7 añade esa señal sin usar marcador propio ni
+futuro. Elegida sólo con 2025 (entrenamiento 2022–2024), baja Brier de
+0.245522 a 0.245235 y log loss de 0.684097 a 0.683492 contra E3 sobre las
+mismas filas. El único test de 2026 repite la mejora: Brier 0.245949 a
+0.245633 y log loss 0.684965 a 0.684313 (2,283 partidos).
+
+**INTERPRETACIÓN:** es una mejora pequeña pero consistente; se conserva como
+señal experimental, no como validación de producción ni promesa de ganancia.
+El detalle y el control equivalente están en
+`docs/experiments/2026-10-05-e7-opponent-strength.md`.
+
+**Próxima acción:** diseñar y evaluar una sola versión point-in-time de forma
+reciente (ventana móvil), comparada contra E3+E7 en las mismas filas. No tocar
+E6-B hasta tener historial de lineups verificablemente pregame.
+
 ## Última verificación
 
 ```text
-120 / 120 PASS
+126 / 126 PASS
 ```
 
 Comando:
@@ -165,8 +184,9 @@ sección "Primera evaluación real" arriba sí son sobre partidos MLB reales.
 
 ## Próxima acción recomendada
 
-Ya no es conseguir un dataset histórico real (resuelto). Por orden de impacto esperado,
-según `data/evaluation/first_real_evaluation_2026-09-19.md`:
+El siguiente experimento controlado es una ventana de forma reciente
+point-in-time, comparada contra E3+E7. E6-B sigue bloqueado hasta obtener
+lineups históricos con evidencia pregame.
 
 ```text
 usar probable_pitchers (ya en el dataset, sin usar en features)

@@ -45,6 +45,8 @@ Statcast                     NOT IMPLEMENTED / not verified
 TeamRunProfile               mlb_kaizen/features/run_profile.py
                              docs/features/run_profile.md
                              tests/test_run_profile.py
+Opponent strength (E7)       mlb_kaizen/training/build_dataset.py
+                             docs/features/opponent_strength.md
 League average definition    docs/features/league_average.md
 ```
 

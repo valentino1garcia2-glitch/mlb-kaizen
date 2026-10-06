@@ -28,3 +28,16 @@ Auditoría completada en
 Resultado: **E6_DATA_BLOCKED**. Las 12,045 partidas históricas auditadas tienen
 0 lineups, 0 timestamps de lineup utilizables y 0 confirmaciones pregame. No
 se inicia E6-B hasta recibir/capturar evidencia temporal válida.
+
+## E7 — Fuerza previa de rivales — 2026-10-05
+
+E6 permanece bloqueado por falta de timestamps pregame de lineups. E7 usa
+solamente resultados históricos ya disponibles antes de cada partido: la
+calidad acumulada de los rivales que cada club ya enfrentó. El protocolo,
+salvaguardas y resultados completos viven en
+[`2026-10-05-e7-opponent-strength.md`](../experiments/2026-10-05-e7-opponent-strength.md).
+
+En comparación justa sobre las mismas filas, el control E3 pasa de Brier
+0.245522 a 0.245235 en validación 2025 y de 0.245949 a 0.245633 en el test
+final 2026; log loss también baja en ambos cortes. **Decisión: KEEP como
+señal experimental**, aún no como modelo validado ni ventaja rentable.

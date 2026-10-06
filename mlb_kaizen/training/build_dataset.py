@@ -41,6 +41,11 @@ MINIMUM_PRIOR_GAMES = 1
 MINIMUM_LEAGUE_GAMES_FOR_AVERAGE = 10
 MINIMUM_GAMES_AT_VENUE = 20
 
+#: Feature-contract identifier for the prior-only opponent-strength inputs.
+#: Formula changes require a new version rather than silently rewriting a
+#: historical experiment's meaning.
+OPPONENT_STRENGTH_FORMULA_VERSION = "opponent_strength_formula_v1"
+
 CANONICAL_VENUE_NAMES = {
     "UNIQLO Field at Dodger Stadium": "Dodger Stadium",
     "Rate Field": "Guaranteed Rate Field",
@@ -157,6 +162,122 @@ def build_point_in_time_rows(
         away.games_played += 1
         team_totals[game.home_team_id] = home
         team_totals[game.away_team_id] = away
+        league_runs += game.home_runs + game.away_runs
+        league_games += 2
+
+    return rows
+
+
+def build_point_in_time_rows_with_opponent_strength(
+    games: list[CompletedGameResult],
+    *,
+    minimum_prior_games: int = MINIMUM_PRIOR_GAMES,
+    minimum_league_games_for_average: int = MINIMUM_LEAGUE_GAMES_FOR_AVERAGE,
+    minimum_prior_matchups: int = 1,
+    home_advantage: float = DEFAULT_HOME_ADVANTAGE,
+) -> list[HistoricalGameRow]:
+    """Build team rows plus strictly-prior strength-of-schedule inputs.
+
+    For each club, the two extra inputs are the match-count-weighted current
+    offensive and run-prevention indices of opponents that club has already
+    faced.  Every opponent profile is read before the current game is added to
+    any accumulator, so neither this game's score nor future games can affect
+    its own row.
+    """
+
+    if minimum_prior_games < 1:
+        raise ValueError("minimum_prior_games must be at least 1")
+    if minimum_league_games_for_average < 1:
+        raise ValueError("minimum_league_games_for_average must be at least 1")
+    if minimum_prior_matchups < 1:
+        raise ValueError("minimum_prior_matchups must be at least 1")
+
+    team_totals: dict[str, _TeamAccumulator] = {}
+    opponent_counts: dict[str, dict[str, int]] = {}
+    league_runs = league_games = 0
+    rows: list[HistoricalGameRow] = []
+
+    def schedule_profile(team_id: str, league_average: float) -> tuple[float, float]:
+        opponents = opponent_counts.get(team_id, {})
+        matchup_count = sum(opponents.values())
+        if matchup_count < minimum_prior_matchups:
+            raise ValueError("insufficient prior opponents for schedule profile")
+        weighted_offence = weighted_prevention = 0.0
+        for opponent_id, times_faced in opponents.items():
+            opponent = team_totals[opponent_id]
+            # An opponent can only enter this mapping after a completed prior
+            # matchup, therefore it necessarily has a non-zero prior sample.
+            weighted_offence += times_faced * run_rate_index(
+                opponent.runs_scored / opponent.games_played, league_average
+            )
+            weighted_prevention += times_faced * run_rate_index(
+                opponent.runs_allowed / opponent.games_played, league_average
+            )
+        return weighted_offence / matchup_count, weighted_prevention / matchup_count
+
+    for game in sorted(games, key=lambda item: (item.start_time, item.game_id)):
+        home = team_totals.get(game.home_team_id, _TeamAccumulator())
+        away = team_totals.get(game.away_team_id, _TeamAccumulator())
+        home_matchups = sum(opponent_counts.get(game.home_team_id, {}).values())
+        away_matchups = sum(opponent_counts.get(game.away_team_id, {}).values())
+
+        eligible = (
+            home.games_played >= minimum_prior_games
+            and away.games_played >= minimum_prior_games
+            and league_games >= minimum_league_games_for_average
+            and home_matchups >= minimum_prior_matchups
+            and away_matchups >= minimum_prior_matchups
+        )
+        if eligible:
+            league_average = league_runs / league_games
+            home_opponent_offence, home_opponent_prevention = schedule_profile(
+                game.home_team_id, league_average
+            )
+            away_opponent_offence, away_opponent_prevention = schedule_profile(
+                game.away_team_id, league_average
+            )
+            rows.append(
+                HistoricalGameRow(
+                    game_id=game.game_id,
+                    official_date=game.official_date,
+                    prediction_timestamp=game.start_time,
+                    feature_timestamp=game.start_time,
+                    features={
+                        "home_offensive_index": run_rate_index(
+                            home.runs_scored / home.games_played, league_average
+                        ),
+                        "away_offensive_index": run_rate_index(
+                            away.runs_scored / away.games_played, league_average
+                        ),
+                        "home_run_prevention_index": run_rate_index(
+                            home.runs_allowed / home.games_played, league_average
+                        ),
+                        "away_run_prevention_index": run_rate_index(
+                            away.runs_allowed / away.games_played, league_average
+                        ),
+                        "home_advantage": home_advantage,
+                        "home_opponent_offensive_index": home_opponent_offence,
+                        "home_opponent_run_prevention_index": home_opponent_prevention,
+                        "away_opponent_offensive_index": away_opponent_offence,
+                        "away_opponent_run_prevention_index": away_opponent_prevention,
+                    },
+                    home_runs=game.home_runs,
+                    away_runs=game.away_runs,
+                )
+            )
+
+        # Mutate only after every feature for this game was constructed.
+        home.runs_scored += game.home_runs
+        home.runs_allowed += game.away_runs
+        home.games_played += 1
+        away.runs_scored += game.away_runs
+        away.runs_allowed += game.home_runs
+        away.games_played += 1
+        team_totals[game.home_team_id], team_totals[game.away_team_id] = home, away
+        home_opponents = opponent_counts.setdefault(game.home_team_id, {})
+        home_opponents[game.away_team_id] = home_opponents.get(game.away_team_id, 0) + 1
+        away_opponents = opponent_counts.setdefault(game.away_team_id, {})
+        away_opponents[game.home_team_id] = away_opponents.get(game.home_team_id, 0) + 1
         league_runs += game.home_runs + game.away_runs
         league_games += 2
 
