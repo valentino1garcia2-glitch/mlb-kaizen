@@ -172,4 +172,21 @@ MIGRATIONS: tuple[Migration, ...] = (
                 ON analyst_decisions(prediction_id);
         """,
     ),
+    Migration(
+        version=5,
+        description="append-only E3+E7+E8 inference feature snapshots",
+        sql="""
+            CREATE TABLE inference_feature_snapshots (
+                snapshot_id TEXT PRIMARY KEY,
+                game_id TEXT NOT NULL,
+                prediction_timestamp TEXT NOT NULL,
+                source_timestamp TEXT NOT NULL,
+                feature_schema_version TEXT NOT NULL,
+                formula_version TEXT NOT NULL,
+                payload_json TEXT NOT NULL
+            );
+            CREATE INDEX idx_inference_feature_snapshots_game_time
+                ON inference_feature_snapshots(game_id, prediction_timestamp);
+        """,
+    ),
 )

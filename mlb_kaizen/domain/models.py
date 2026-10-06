@@ -206,6 +206,41 @@ class TeamRunProfile:
 
 
 @dataclass(frozen=True, slots=True)
+class InferenceFeatureSnapshot:
+    """An append-only, pregame E3+E7+E8 feature vector for one game.
+
+    ``source_timestamp`` is the latest retrieval time among every raw input
+    used to calculate the vector.  It must be no later than the requested
+    prediction instant; otherwise the observation cannot honestly represent
+    what was known pregame.
+    """
+
+    game_id: str
+    prediction_timestamp: datetime
+    source_timestamp: datetime
+    feature_schema_version: str
+    formula_version: str
+    features: Mapping[str, float]
+
+    def __post_init__(self) -> None:
+        if not self.game_id:
+            raise ValueError("game_id is required")
+        _require_aware(self.prediction_timestamp, "prediction_timestamp")
+        _require_aware(self.source_timestamp, "source_timestamp")
+        if self.source_timestamp > self.prediction_timestamp:
+            raise ValueError("source_timestamp cannot be later than prediction_timestamp")
+        if not self.feature_schema_version or not self.formula_version:
+            raise ValueError("feature schema and formula version are required")
+        if not self.features:
+            raise ValueError("features are required")
+        try:
+            normalised = {name: float(value) for name, value in self.features.items()}
+        except (TypeError, ValueError) as exc:
+            raise ValueError("features must be numeric") from exc
+        object.__setattr__(self, "features", normalised)
+
+
+@dataclass(frozen=True, slots=True)
 class ProbablePitcher:
     """A probable starting pitcher for one team, or a recorded absence.
 

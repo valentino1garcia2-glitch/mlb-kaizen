@@ -12,7 +12,10 @@ import sqlite3
 from typing import Any
 from uuid import uuid4
 
-from mlb_kaizen.domain.models import Game, GameLineups, GameWeather, ProbablePitcher, TeamRunProfile, TeamSeasonStats
+from mlb_kaizen.domain.models import (
+    Game, GameLineups, GameWeather, InferenceFeatureSnapshot, ProbablePitcher,
+    TeamRunProfile, TeamSeasonStats,
+)
 from mlb_kaizen.storage.migrations import MIGRATIONS
 
 
@@ -81,6 +84,34 @@ class KaizenDatabase:
                 ),
             )
         return snapshot_id
+
+    def store_inference_feature_snapshot(self, snapshot: InferenceFeatureSnapshot) -> str:
+        """Append a pregame feature vector; never overwrite an earlier pull."""
+
+        snapshot_id = str(uuid4())
+        with self._connection() as connection:
+            connection.execute(
+                """INSERT INTO inference_feature_snapshots
+                   (snapshot_id, game_id, prediction_timestamp, source_timestamp,
+                    feature_schema_version, formula_version, payload_json)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    snapshot_id,
+                    snapshot.game_id,
+                    snapshot.prediction_timestamp.isoformat(),
+                    snapshot.source_timestamp.isoformat(),
+                    snapshot.feature_schema_version,
+                    snapshot.formula_version,
+                    json.dumps(dict(snapshot.features), sort_keys=False),
+                ),
+            )
+        return snapshot_id
+
+    def inference_feature_snapshot_count(self) -> int:
+        """Return the number of immutable daily E3+E7+E8 vectors."""
+
+        with self._connection() as connection:
+            return int(connection.execute("SELECT COUNT(*) FROM inference_feature_snapshots").fetchone()[0])
 
     def store_prediction(
         self,

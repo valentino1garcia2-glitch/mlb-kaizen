@@ -227,6 +227,19 @@ inseparable. El artefacto sigue siendo experimental; su persistencia correcta
 no lo convierte en modelo listo para apuestas o producción. Contrato y uso:
 `docs/inference-artifacts.md`.
 
+## Snapshots diarios E3+E7+E8 (2026-10-06)
+
+**FACT:** el módulo `e8_daily_snapshot` construye las 13 features exactas
+desde resultados finalizados previos y un schedule pregame. Guarda el vector,
+su orden, el instante de predicción y el último timestamp de fuente en SQLite
+sin sobrescribir capturas anteriores.
+
+**PROTECCIÓN:** rechaza resultados del propio juego, fuentes recuperadas tras
+el instante de predicción y una predicción al inicio o después del partido.
+No crea ni valida una señal nueva; hace reproducible la información diaria que
+alimentará el artefacto experimental E11. Contrato:
+`docs/features/e8_daily_snapshot.md`.
+
 ## Última verificación
 
 ```text
@@ -260,10 +273,11 @@ sección "Primera evaluación real" arriba sí son sobre partidos MLB reales.
 
 ## Próxima acción recomendada
 
-El siguiente bloque debe diseñar la captura point-in-time, append-only, de las
-13 features E3+E7+E8 que alimentarán al artefacto diario. No se debe construir
-un vector diario con datos retrospectivos ni reabrir E6-B: éste sigue bloqueado
-hasta obtener lineups históricos con evidencia pregame.
+El siguiente bloque debe conectar la captura en vivo de schedule/resultados
+verificados con el snapshot diario y después con el artefacto E11, manteniendo
+una selección explícita del artefacto confiable. No se debe construir un vector
+diario con datos retrospectivos ni reabrir E6-B: éste sigue bloqueado hasta
+obtener lineups históricos con evidencia pregame.
 
 ```text
 usar probable_pitchers (ya en el dataset, sin usar en features)

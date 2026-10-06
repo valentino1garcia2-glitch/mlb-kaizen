@@ -32,6 +32,21 @@ silenciosa.
 
 ---
 
+## DD-017 — Un vector diario sólo representa evidencia disponible antes del partido
+
+Cada vector E3+E7+E8 diario se persiste append-only junto con el instante de
+predicción y el último `retrieved_at` de sus fuentes. El sistema rechaza
+resultados obtenidos después de ese instante, el resultado del propio juego y
+predicciones hechas al inicio o después de éste.
+
+**Razón:** recalcular una feature histórica hoy puede producir números
+plausibles, pero no demuestra que fueran conocidos entonces. La captura
+operativa debe preservar tanto los valores como su disponibilidad temporal.
+
+**Status:** LOCKED
+
+---
+
 **ID:** DD-001
 **Decisión:** Todo registro que puede representar una ausencia de dato
 (`ProbablePitcher`, `GameLineups`, `GameWeather`) lleva `provenance`
