@@ -7,7 +7,7 @@ are zero or confirmed.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 from urllib.parse import urlencode
 
@@ -74,6 +74,35 @@ class MLBStatsProvider:
         )
         response = self.client.get_json(f"{self.base_url}?{query}")
         return self.parse_completed_games(response)
+
+    def completed_games_batched(
+        self, start_date: date, end_date: date, *, max_days_per_request: int = 180
+    ) -> list[CompletedGameResult]:
+        """Fetch a long completed-game history without API range truncation.
+
+        The public schedule endpoint may return a partial response for a
+        multi-year date range.  Fixed, non-overlapping chunks retain each raw
+        response's own retrieval timestamp and avoid silently treating a
+        partial history as sufficient for a daily E8 vector.
+        """
+
+        if end_date < start_date:
+            raise ValueError("end_date cannot be earlier than start_date")
+        if max_days_per_request < 1:
+            raise ValueError("max_days_per_request must be positive")
+        results: list[CompletedGameResult] = []
+        cursor = start_date
+        while cursor <= end_date:
+            chunk_end = min(cursor + timedelta(days=max_days_per_request - 1), end_date)
+            results.extend(self.completed_games(cursor, chunk_end))
+            cursor = chunk_end + timedelta(days=1)
+        # A game can be revised/suspended across source responses. Preserve
+        # one identity only; duplicate game IDs would otherwise double-count
+        # a team's history. The latest retrieval is the most current final
+        # observation and remains point-in-time because it was retrieved
+        # before the daily prediction timestamp.
+        latest_by_game = {result.game_id: result for result in results}
+        return sorted(latest_by_game.values(), key=lambda result: (result.start_time, result.game_id))
 
     @classmethod
     def parse_completed_games(cls, response: RetrievedJson) -> list[CompletedGameResult]:

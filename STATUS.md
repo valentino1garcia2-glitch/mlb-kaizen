@@ -251,6 +251,14 @@ historia o una fuente fue recuperada tarde, no guarda predicción. Una captura
 correcta acredita integridad de inputs, no convierte el modelo experimental en
 una estrategia de apuestas validada.
 
+**SMOKE VIVO:** el 2026-10-06 se capturó Dodgers @ Braves (`mlb:849819`) a
+las 10:07 UTC para inicio programado 22:00 UTC. Se guardaron un snapshot y una
+predicción append-only: probabilidad cruda local 46.16%, calibrada 50.32%,
+con carreras esperadas 4.02 local / 4.43 visitante. Es un registro técnico
+pregame, no una recomendación ni una conclusión sobre rentabilidad. La API
+truncó la primera consulta histórica multi-anual; el cliente se corrigió para
+recuperar tramos no solapados antes de permitir la captura.
+
 ## Última verificación
 
 ```text
@@ -284,10 +292,10 @@ sección "Primera evaluación real" arriba sí son sobre partidos MLB reales.
 
 ## Próxima acción recomendada
 
-El siguiente bloque debe probar el comando con una captura MLB real antes de
-un juego futuro y revisar el registro append-only resultante. No se debe
-construir un vector diario con datos retrospectivos ni reabrir E6-B: éste
-sigue bloqueado hasta obtener lineups históricos con evidencia pregame.
+El siguiente bloque debe registrar el resultado final de la captura pregame
+ya creada y revisar el seguimiento de calibración/CLV cuando existan cuotas
+históricas confiables. No se debe reabrir E6-B: éste sigue bloqueado hasta
+obtener lineups históricos con evidencia pregame.
 
 ```text
 usar probable_pitchers (ya en el dataset, sin usar en features)

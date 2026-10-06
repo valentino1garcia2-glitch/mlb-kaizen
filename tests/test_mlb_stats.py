@@ -1,5 +1,6 @@
 from datetime import UTC, date, datetime
 import unittest
+from unittest.mock import call, patch
 
 from mlb_kaizen.data.http import RetrievedJson
 from mlb_kaizen.data.mlb_stats import MLBStatsProvider
@@ -7,6 +8,22 @@ from mlb_kaizen.domain.models import AvailabilityStatus
 
 
 class MLBStatsTests(unittest.TestCase):
+    def test_completed_games_batched_uses_non_overlapping_ranges(self) -> None:
+        provider = MLBStatsProvider(client=None)  # type: ignore[arg-type]
+        with patch.object(provider, "completed_games", return_value=[]) as completed:
+            self.assertEqual(
+                provider.completed_games_batched(date(2026, 1, 1), date(2026, 1, 5), max_days_per_request=2),
+                [],
+            )
+        self.assertEqual(
+            completed.call_args_list,
+            [
+                call(date(2026, 1, 1), date(2026, 1, 2)),
+                call(date(2026, 1, 3), date(2026, 1, 4)),
+                call(date(2026, 1, 5), date(2026, 1, 5)),
+            ],
+        )
+
     def test_schedule_payload_is_normalised_to_provider_independent_game(self) -> None:
         response = RetrievedJson(
             payload={

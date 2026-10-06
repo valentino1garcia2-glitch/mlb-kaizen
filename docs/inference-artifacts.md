@@ -50,6 +50,10 @@ la predicción cruda y calibrada. Si falta historia, el juego no pertenece al
 calendario solicitado, una fuente llegó tarde o el partido ya inició, falla
 sin escribir una predicción.
 
+La historia se consulta en bloques de fechas no solapados: el endpoint público
+de MLB puede truncar una consulta de varios años. Una respuesta parcial no se
+acepta como historial suficiente para una feature diaria.
+
 `data_quality=1.0` en ese registro significa únicamente que se cumplieron los
 requisitos estrictos del vector de entrada; no cambia el estado experimental
 del modelo ni significa calidad predictiva perfecta.

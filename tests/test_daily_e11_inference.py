@@ -25,6 +25,9 @@ class _Provider:
     def completed_games(self, start_date, end_date):
         return self.history
 
+    def completed_games_batched(self, start_date, end_date):
+        return self.history
+
 
 class DailyE11InferenceTests(unittest.TestCase):
     def _inputs(self):
@@ -79,3 +82,31 @@ class DailyE11InferenceTests(unittest.TestCase):
                     history_start=date(2022, 3, 1), artifact_path=Path("trusted/e11"),
                     prediction_timestamp=prediction_timestamp,
                 )
+
+    def test_default_prediction_time_is_captured_after_sources(self) -> None:
+        now = datetime.now(UTC)
+        start = now + timedelta(days=1)
+        game = Game(
+            game_id="mlb:future", official_date=start.date(), start_time=start,
+            home_team_id="H", home_team_name="Home", away_team_id="A", away_team_name="Away",
+            provenance=DataProvenance(
+                source="test schedule", retrieved_at=now - timedelta(minutes=2),
+                status=AvailabilityStatus.AVAILABLE,
+            ),
+        )
+        _, history, _ = self._inputs()
+        fake_prediction = SimpleNamespace(
+            raw_home_win_probability=0.51, calibrated_home_win_probability=0.53,
+            run_prediction=SimpleNamespace(home_expected_runs=4.3, away_expected_runs=3.9),
+        )
+        artifact = SimpleNamespace(predict=lambda features: fake_prediction)
+        metadata = SimpleNamespace(model_version="test-e11", experiment_id="E3+E7+E8+E11")
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
+            with patch("mlb_kaizen.interface.cli.load_e11_inference_artifact", return_value=(artifact, metadata)):
+                result = _run_daily_e11_inference(
+                    provider=_Provider(game, history), database=database,
+                    game_date=start.date(), game_id="mlb:future", history_start=date(2022, 3, 1),
+                    artifact_path=Path("trusted/e11"),
+                )
+        self.assertEqual(result["status"], "EXPERIMENTAL_PREGAME_PREDICTION_SAVED")

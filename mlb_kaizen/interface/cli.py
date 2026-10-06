@@ -265,7 +265,7 @@ def _run_daily_e11_inference(
     game_id: str,
     history_start: date,
     artifact_path: Path,
-    prediction_timestamp: datetime,
+    prediction_timestamp: datetime | None = None,
 ) -> dict[str, Any]:
     """Fetch verified live inputs, persist the vector, then infer with E11."""
 
@@ -273,10 +273,15 @@ def _run_daily_e11_inference(
     target = next((item for item in games if item.game_id == game_id), None)
     if target is None:
         raise ValueError(f"game_id {game_id!r} is not present in the requested schedule")
+    # The prediction instant must be established only after every source has
+    # been retrieved.  Capturing it before network I/O would falsely mark a
+    # fresh source as arriving "after" the prediction.
+    history = provider.completed_games_batched(history_start, game_date)
+    captured_at = prediction_timestamp or datetime.now(UTC)
     snapshot = build_e8_daily_feature_snapshot(
         target,
-        provider.completed_games(history_start, game_date),
-        prediction_timestamp=prediction_timestamp,
+        history,
+        prediction_timestamp=captured_at,
     )
     artifact, metadata = load_e11_inference_artifact(artifact_path)
     prediction = artifact.predict(snapshot.features)
@@ -581,7 +586,6 @@ def main(argv: list[str] | None = None) -> int:
                 game_id=args.game_id,
                 history_start=args.history_start,
                 artifact_path=args.artifact,
-                prediction_timestamp=datetime.now(UTC),
             )
             print(json.dumps(output, default=_json_default, indent=2, sort_keys=True))
             return 0
