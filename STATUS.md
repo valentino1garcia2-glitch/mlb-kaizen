@@ -1,7 +1,7 @@
 # STATUS.md — MLB KAIZEN checkpoint
 
 fecha: 2026-10-06
-commit: f1f14eb
+commit: e10739e
 
 ## Integración de recuperación — 2026-10-03
 

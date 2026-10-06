@@ -25,7 +25,7 @@
   },
   "tests_passed": 151,
   "tests_total": 151,
-  "last_verified_commit": "ae338e6",
+  "last_verified_commit": "e10739e",
   "current_blockers": [
     "live verification of SportsGameOdds requires key and network",
     "live verification of MLB team stats and NWS weather is still pending",
