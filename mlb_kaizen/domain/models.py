@@ -104,6 +104,7 @@ class Game:
     provenance: DataProvenance
     start_time: datetime | None = None
     venue_name: str | None = None
+    game_type: str | None = None
 
     def __post_init__(self) -> None:
         if not self.game_id or not self.home_team_id or not self.away_team_id:
@@ -112,6 +113,8 @@ class Game:
             raise ValueError("home and away teams must differ")
         if self.start_time is not None:
             _require_aware(self.start_time, "start_time")
+        if self.game_type is not None and not self.game_type.strip():
+            raise ValueError("game_type cannot be empty when supplied")
 
 
 @dataclass(frozen=True, slots=True)

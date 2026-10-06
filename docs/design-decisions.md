@@ -47,6 +47,20 @@ operativa debe preservar tanto los valores como su disponibilidad temporal.
 
 ---
 
+## DD-018 — El modelo regular no emite predicciones de playoffs
+
+`daily-e11-inference` exige que MLB identifique el juego como `game_type: R`.
+Los códigos de playoffs y un tipo ausente se rechazan hasta que un experimento
+postseason separado tenga dataset, evaluación temporal y artefacto propios.
+
+**Razón:** una predicción de playoffs puede parecer numéricamente válida, pero
+no es evidencia comparable con un modelo entrenado y calibrado sólo en
+temporada regular. Bloquearla es más honesto que etiquetarla como equivalente.
+
+**Status:** LOCKED
+
+---
+
 **ID:** DD-001
 **Decisión:** Todo registro que puede representar una ausencia de dato
 (`ProbablePitcher`, `GameLineups`, `GameWeather`) lleva `provenance`

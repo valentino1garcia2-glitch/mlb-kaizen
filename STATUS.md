@@ -259,10 +259,23 @@ pregame, no una recomendación ni una conclusión sobre rentabilidad. La API
 truncó la primera consulta histórica multi-anual; el cliente se corrigió para
 recuperar tramos no solapados antes de permitir la captura.
 
+## E12-A — Playoffs: protección y viabilidad (2026-10-06)
+
+**FACT:** E3+E7+E8 se entrenó con `game_type: R` (temporada regular). MLB
+reporta playoffs con códigos `F`, `D`, `L` y `W`; se contaron 530 juegos
+finales oficiales entre 2012 y 2025, de los cuales sólo 169 pertenecen al
+corte 2022–2025 actualmente disponible.
+
+**DECISIÓN:** `daily-e11-inference` ahora acepta sólo `R` y bloquea playoffs
+o tipo de juego desconocido. La predicción Dodgers–Braves previa a este guard
+es un smoke técnico y no debe evaluarse como una predicción de temporada
+regular. E12 no ha entrenado ni calibrado un modelo nuevo. Registro:
+`docs/experiments/2026-10-06-e12-postseason-readiness.md`.
+
 ## Última verificación
 
 ```text
-147 / 147 PASS
+157 / 157 PASS
 ```
 
 Comando:

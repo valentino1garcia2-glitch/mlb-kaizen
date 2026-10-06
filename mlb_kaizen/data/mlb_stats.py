@@ -558,5 +558,6 @@ class MLBStatsProvider:
             away_team_name=str(away["name"]),
             start_time=start_time,
             venue_name=str(venue["name"]) if isinstance(venue, dict) and venue.get("name") else None,
+            game_type=str(raw_game["gameType"]) if raw_game.get("gameType") else None,
             provenance=provenance,
         )

@@ -75,6 +75,7 @@ def _parse_game(payload: dict[str, Any]) -> Game:
         provenance=_parse_provenance(payload["provenance"]),
         start_time=_parse_timestamp(str(payload["start_time"])) if payload.get("start_time") else None,
         venue_name=str(payload["venue_name"]) if payload.get("venue_name") else None,
+        game_type=str(payload["game_type"]) if payload.get("game_type") else None,
     )
 
 
@@ -273,6 +274,11 @@ def _run_daily_e11_inference(
     target = next((item for item in games if item.game_id == game_id), None)
     if target is None:
         raise ValueError(f"game_id {game_id!r} is not present in the requested schedule")
+    if target.game_type != "R":
+        raise ValueError(
+            "daily E11 inference supports regular-season games only; "
+            f"received game_type={target.game_type!r}"
+        )
     # The prediction instant must be established only after every source has
     # been retrieved.  Capturing it before network I/O would falsely mark a
     # fresh source as arriving "after" the prediction.

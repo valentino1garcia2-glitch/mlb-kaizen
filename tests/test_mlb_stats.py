@@ -34,6 +34,7 @@ class MLBStatsTests(unittest.TestCase):
                             {
                                 "gamePk": 123,
                                 "gameDate": "2026-09-16T23:10:00Z",
+                                "gameType": "R",
                                 "teams": {
                                     "home": {"team": {"id": 10, "name": "Home"}},
                                     "away": {"team": {"id": 20, "name": "Away"}},
@@ -51,6 +52,7 @@ class MLBStatsTests(unittest.TestCase):
         games = MLBStatsProvider.parse_schedule(response, expected_date=date(2026, 9, 16))
         self.assertEqual(len(games), 1)
         self.assertEqual(games[0].game_id, "mlb:123")
+        self.assertEqual(games[0].game_type, "R")
         self.assertEqual(games[0].start_time, datetime(2026, 9, 16, 23, 10, tzinfo=UTC))
 
     def test_probable_pitchers_are_reported_per_team_when_posted(self) -> None:

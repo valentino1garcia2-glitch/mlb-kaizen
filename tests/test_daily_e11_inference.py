@@ -39,6 +39,7 @@ class DailyE11InferenceTests(unittest.TestCase):
         game = Game(
             game_id="mlb:target", official_date=start.date(), start_time=start,
             home_team_id="H", home_team_name="Home", away_team_id="A", away_team_name="Away",
+            game_type="R",
             provenance=provenance,
         )
         history = []
@@ -89,6 +90,7 @@ class DailyE11InferenceTests(unittest.TestCase):
         game = Game(
             game_id="mlb:future", official_date=start.date(), start_time=start,
             home_team_id="H", home_team_name="Home", away_team_id="A", away_team_name="Away",
+            game_type="R",
             provenance=DataProvenance(
                 source="test schedule", retrieved_at=now - timedelta(minutes=2),
                 status=AvailabilityStatus.AVAILABLE,
@@ -110,3 +112,21 @@ class DailyE11InferenceTests(unittest.TestCase):
                     artifact_path=Path("trusted/e11"),
                 )
         self.assertEqual(result["status"], "EXPERIMENTAL_PREGAME_PREDICTION_SAVED")
+
+    def test_rejects_postseason_until_a_separate_model_is_validated(self) -> None:
+        game, history, prediction_timestamp = self._inputs()
+        postseason = Game(
+            game_id=game.game_id, official_date=game.official_date, start_time=game.start_time,
+            home_team_id=game.home_team_id, home_team_name=game.home_team_name,
+            away_team_id=game.away_team_id, away_team_name=game.away_team_name,
+            provenance=game.provenance, game_type="D",
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            with self.assertRaisesRegex(ValueError, "regular-season games only"):
+                _run_daily_e11_inference(
+                    provider=_Provider(postseason, history),
+                    database=KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3"),
+                    game_date=postseason.official_date, game_id=postseason.game_id,
+                    history_start=date(2022, 3, 1), artifact_path=Path("trusted/e11"),
+                    prediction_timestamp=prediction_timestamp,
+                )
