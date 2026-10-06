@@ -49,6 +49,8 @@ Opponent strength (E7)       mlb_kaizen/training/build_dataset.py
                              docs/features/opponent_strength.md
 Recent form (E8)             mlb_kaizen/training/build_dataset.py
                              docs/features/recent_form.md
+Rest days (E9, negative)     mlb_kaizen/training/build_dataset.py
+                             docs/features/rest_days.md
 League average definition    docs/features/league_average.md
 ```
 

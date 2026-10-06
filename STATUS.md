@@ -1,7 +1,7 @@
 # STATUS.md — MLB KAIZEN checkpoint
 
 fecha: 2026-10-03
-commit: 7401043
+commit: baa49bc
 
 ## Integración de recuperación — 2026-10-03
 
@@ -168,6 +168,20 @@ Registro: `docs/experiments/2026-10-06-e8-recent-form.md`.
 entre partidos, comparado contra E3+E7+E8 sobre las mismas filas. E6-B sigue
 bloqueado hasta contar con lineups históricamente verificables antes del juego.
 
+## E9 — días de descanso (2026-10-06)
+
+**FACT:** E9 derivó días completos sin jugar desde las fechas de los partidos
+anteriores. En validación 2025, contra E3+E7+E8 y sobre las mismas 2,171
+filas, Brier empeoró de 0.244775 a 0.244870 y log loss de 0.682519 a 0.682720.
+
+**DECISIÓN:** descartada como señal activa. No se abrió 2026: hacerlo tras el
+fallo de 2025 rompería el protocolo. El pequeño descenso en error de carreras
+no compensa el empeoramiento de probabilidades. Detalle:
+`docs/experiments/2026-10-06-e9-rest-days.md`.
+
+**Próxima acción:** evaluar una sola representación point-in-time de rendimiento
+separado en casa/visita, comparada contra E3+E7+E8. E6-B continúa bloqueado.
+
 ## Última verificación
 
 ```text
@@ -201,7 +215,7 @@ sección "Primera evaluación real" arriba sí son sobre partidos MLB reales.
 
 ## Próxima acción recomendada
 
-El siguiente experimento controlado es días de descanso entre partidos,
+El siguiente experimento controlado es rendimiento separado en casa/visita,
 comparado contra E3+E7+E8. E6-B sigue bloqueado hasta obtener lineups
 históricos con evidencia pregame.
 

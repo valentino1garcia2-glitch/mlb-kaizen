@@ -966,3 +966,16 @@ Resultados: validación Brier 0.245308→0.244775 / log loss
 0.683573→0.683250. Es una mejora incremental pequeña, no validación de
 producción ni demostración de rentabilidad. Registro completo:
 `docs/experiments/2026-10-06-e8-recent-form.md`.
+
+## 28. E9 — días de descanso, resultado negativo (2026-10-06)
+
+E9 calculó `max(0, fecha_actual - fecha_último_juego - 1)` para local y
+visitante, siempre con el último partido estrictamente anterior. Las pruebas
+cubren juegos consecutivos, futuro y timestamps. La validación 2025 comparó
+E3+E7+E8 contra la misma base con descanso: Brier empeoró 0.244775→0.244870 y
+log loss 0.682519→0.682720, pese a una reducción marginal de MAE de carreras.
+
+Decisión pre-registrada aplicada: **DISCARD**. No se corrió 2026 y la feature
+no entra al modelo activo. Código y ficha `rest_days_formula_v1` se preservan
+para trazabilidad, no como evidencia favorable. Registro:
+`docs/experiments/2026-10-06-e9-rest-days.md`.

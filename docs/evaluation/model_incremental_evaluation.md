@@ -51,3 +51,11 @@ el test final 2026; log loss también disminuyó en ambos. **Decisión: KEEP com
 señal experimental**, no validación de producción ni ventaja rentable. El
 protocolo y evidencia están en
 [`2026-10-06-e8-recent-form.md`](../experiments/2026-10-06-e8-recent-form.md).
+
+## E9 — Días de descanso — 2026-10-06
+
+E9 derivó días completos sin jugar desde el calendario anterior, sin fuentes
+externas ni leakage. Frente a E3+E7+E8 en la validación 2025, Brier empeoró de
+0.244775 a 0.244870 y log loss de 0.682519 a 0.682720. **Decisión: DISCARD**;
+no se abrió 2026. Registro completo:
+[`2026-10-06-e9-rest-days.md`](../experiments/2026-10-06-e9-rest-days.md).

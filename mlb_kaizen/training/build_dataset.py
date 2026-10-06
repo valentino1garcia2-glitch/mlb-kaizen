@@ -50,6 +50,7 @@ OPPONENT_STRENGTH_FORMULA_VERSION = "opponent_strength_formula_v1"
 #: experiment.  It is a feature-contract choice, not a value tuned on 2026.
 RECENT_FORM_WINDOW = 15
 RECENT_FORM_FORMULA_VERSION = "recent_form_formula_v1"
+REST_DAYS_FORMULA_VERSION = "rest_days_formula_v1"
 
 CANONICAL_VENUE_NAMES = {
     "UNIQLO Field at Dodger Stadium": "Dodger Stadium",
@@ -432,6 +433,67 @@ def build_point_in_time_rows_with_opponent_strength_and_recent_form(
         record_recent(game.away_team_id, season, game.away_runs, game.home_runs)
         league_runs += game.home_runs + game.away_runs
         league_games += 2
+
+    return rows
+
+
+def build_point_in_time_rows_with_opponent_strength_recent_form_and_rest_days(
+    games: list[CompletedGameResult],
+    *,
+    minimum_prior_games: int = MINIMUM_PRIOR_GAMES,
+    minimum_league_games_for_average: int = MINIMUM_LEAGUE_GAMES_FOR_AVERAGE,
+    minimum_prior_matchups: int = 1,
+    recent_form_window: int = RECENT_FORM_WINDOW,
+    home_advantage: float = DEFAULT_HOME_ADVANTAGE,
+) -> list[HistoricalGameRow]:
+    """Build E8 rows plus days of rest known before each game starts.
+
+    Rest is the number of whole calendar days between a club's last earlier
+    game and this game's date.  The current game is never recorded as a last
+    game until after its row is created.
+    """
+
+    base_rows = build_point_in_time_rows_with_opponent_strength_and_recent_form(
+        games,
+        minimum_prior_games=minimum_prior_games,
+        minimum_league_games_for_average=minimum_league_games_for_average,
+        minimum_prior_matchups=minimum_prior_matchups,
+        recent_form_window=recent_form_window,
+        home_advantage=home_advantage,
+    )
+    base_by_game_id = {row.game_id: row for row in base_rows}
+    last_start: dict[str, CompletedGameResult] = {}
+    rows: list[HistoricalGameRow] = []
+
+    for game in sorted(games, key=lambda item: (item.start_time, item.game_id)):
+        base = base_by_game_id.get(game.game_id)
+        home_previous = last_start.get(game.home_team_id)
+        away_previous = last_start.get(game.away_team_id)
+        if base is not None:
+            # The E8 prerequisites guarantee both previous games exist.  Keep
+            # this explicit so a future change cannot silently invent rest.
+            if home_previous is None or away_previous is None:
+                raise ValueError("eligible rest-day row lacks prior team game")
+            home_rest = max(0, (game.official_date - home_previous.official_date).days - 1)
+            away_rest = max(0, (game.official_date - away_previous.official_date).days - 1)
+            rows.append(
+                HistoricalGameRow(
+                    game_id=base.game_id,
+                    official_date=base.official_date,
+                    prediction_timestamp=base.prediction_timestamp,
+                    feature_timestamp=base.feature_timestamp,
+                    features={
+                        **base.features,
+                        "home_rest_days": float(home_rest),
+                        "away_rest_days": float(away_rest),
+                    },
+                    home_runs=base.home_runs,
+                    away_runs=base.away_runs,
+                )
+            )
+
+        last_start[game.home_team_id] = game
+        last_start[game.away_team_id] = game
 
     return rows
 
