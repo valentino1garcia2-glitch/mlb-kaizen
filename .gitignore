@@ -13,3 +13,6 @@ data/cache/
 data/external/mlb_kaizen_games_v2_2026-09-20/
 data/external/mlb_kaizen_pitchers_2026-09-20/
 data/historical/2022_2026_point_in_time_with_*.jsonl
+# Locally trusted binary inference artifacts are reproducible from documented
+# point-in-time datasets and must not be committed as opaque model blobs.
+artifacts/

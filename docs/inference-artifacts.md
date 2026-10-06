@@ -1,0 +1,33 @@
+# Artefacto de inferencia E3+E7+E8/E11
+
+El comando `train-e11-inference` crea un único artefacto local confiable que
+contiene el Poisson final E3+E7+E8 y su calibrador Platt E11. Reutiliza la
+persistencia existente de artefactos (`.pkl` más `.json`); no descarga ni
+reentrena nada al predecir.
+
+El archivo de metadatos declara esquema, experimento, versión de
+preprocesamiento, fecha máxima de entrenamiento y las 13 features en su orden
+exacto. `predict-e11-inference` carga ese paquete y exige un objeto JSON con
+las mismas 13 claves en el mismo orden. Features faltantes, extras, orden
+distinto, esquema incompatible o valores no numéricos fallan explícitamente.
+
+La persona que genera el vector diario debe proveer E7 y E8 con información
+point-in-time. El artefacto no inventa ni reconstruye esas features y no usa
+el modelo fijo de Analyst Mode como sustituto silencioso.
+
+Ejemplo conceptual:
+
+```text
+train-e11-inference \
+  --training-dataset dataset_2022_2025.jsonl \
+  --calibration-training-dataset dataset_2022_2024.jsonl \
+  --calibration-dataset dataset_2025.jsonl \
+  --output artifacts/e3-e7-e8-e11
+
+predict-e11-inference \
+  --artifact artifacts/e3-e7-e8-e11 \
+  --features pregame_e3_e7_e8_features.json
+```
+
+La inferencia permanece experimental: este contrato garantiza reproducibilidad,
+no validación de producción ni rentabilidad.

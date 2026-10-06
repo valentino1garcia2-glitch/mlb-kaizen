@@ -1,7 +1,7 @@
 # STATUS.md — MLB KAIZEN checkpoint
 
-fecha: 2026-10-03
-commit: ad24e65
+fecha: 2026-10-06
+commit: f6e5438
 
 ## Integración de recuperación — 2026-10-03
 
@@ -207,15 +207,30 @@ Es una corrección pequeña de porcentajes, no una señal nueva, validación de
 producción ni evidencia de rentabilidad. Registro:
 `docs/experiments/2026-10-06-e11-e8-temporal-platt.md`.
 
-**Próxima acción:** crear un flujo reproducible que entrene y guarde juntos un
-artefacto E3+E7+E8 y su calibrador E11, evitando que Analyst Mode cargue un
-calibrador correspondiente a otro conjunto de features. E6-B continúa
-bloqueado.
+**Próxima acción:** completada mediante el contrato de artefacto reproducible
+descrito a continuación. E6-B continúa bloqueado.
+
+## Artefacto de inferencia E3+E7+E8/E11 (2026-10-06)
+
+**FACT:** `train-e11-inference` crea y guarda una única pareja formada por el
+Poisson E3+E7+E8 final y su calibrador Platt E11. `predict-e11-inference` solo
+la carga; no reentrena. El contrato persiste esquema, experimento, orden de
+las 13 features, versiones de modelo/preprocesamiento y metadatos temporales.
+
+**VALIDACIÓN:** con los datos point-in-time disponibles, la probabilidad
+calibrada fue `0.543626573454` antes y después de guardar/cargar el artefacto
+(diferencia `0.0`). Entradas con features faltantes, extras, reordenadas,
+valores no numéricos o metadatos incompatibles se rechazan explícitamente.
+
+**DECISIÓN:** DD-016 bloquea el modelo y calibrador como una pareja
+inseparable. El artefacto sigue siendo experimental; su persistencia correcta
+no lo convierte en modelo listo para apuestas o producción. Contrato y uso:
+`docs/inference-artifacts.md`.
 
 ## Última verificación
 
 ```text
-126 / 126 PASS
+147 / 147 PASS
 ```
 
 Comando:
@@ -245,9 +260,10 @@ sección "Primera evaluación real" arriba sí son sobre partidos MLB reales.
 
 ## Próxima acción recomendada
 
-El siguiente bloque es crear un flujo reproducible de artefactos para el
-modelo E3+E7+E8 y su calibración E11. E6-B sigue bloqueado hasta obtener
-lineups históricos con evidencia pregame.
+El siguiente bloque debe diseñar la captura point-in-time, append-only, de las
+13 features E3+E7+E8 que alimentarán al artefacto diario. No se debe construir
+un vector diario con datos retrospectivos ni reabrir E6-B: éste sigue bloqueado
+hasta obtener lineups históricos con evidencia pregame.
 
 ```text
 usar probable_pitchers (ya en el dataset, sin usar en features)

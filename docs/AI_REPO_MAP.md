@@ -87,6 +87,8 @@ Poisson trainable baseline   mlb_kaizen/training/baseline.py
 Trainer adapters              mlb_kaizen/training/trainers.py
 ML challenger                 mlb_kaizen/models/ml.py
 Artifacts                     mlb_kaizen/training/artifacts.py
+E3+E7+E8/E11 inference        mlb_kaizen/training/inference_artifact.py
+                             docs/inference-artifacts.md
 Metrics                       mlb_kaizen/evaluation/metrics.py
 Walk-forward                  mlb_kaizen/evaluation/walk_forward.py
 Calibration                   mlb_kaizen/evaluation/calibration.py

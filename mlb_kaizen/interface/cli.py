@@ -34,6 +34,11 @@ from mlb_kaizen.validation.schema import validate_analysis_document
 from mlb_kaizen.training.dataset import load_jsonl
 from mlb_kaizen.training.trainers import PoissonTrainer, RandomForestTrainer
 from mlb_kaizen.training.artifacts import ModelArtifactMetadata, load_model_artifact, save_model_artifact
+from mlb_kaizen.training.inference_artifact import (
+    load_e11_inference_artifact,
+    train_e11_inference_artifact,
+    save_e11_inference_artifact,
+)
 from mlb_kaizen.evaluation.walk_forward import walk_forward_evaluate
 from mlb_kaizen.evaluation.calibration import PlattCalibrator, temporal_calibration_report
 from mlb_kaizen.evaluation.compare import ModelComparison
@@ -204,6 +209,25 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--dataset", required=True, type=Path)
     train.add_argument("--model", required=True, choices=("poisson", "rf"))
     train.add_argument("--output", required=True, type=Path)
+    train_e11 = subcommands.add_parser(
+        "train-e11-inference",
+        help="persist a matching E3+E7+E8 Poisson model and E11 Platt calibrator",
+    )
+    train_e11.add_argument("--training-dataset", required=True, type=Path)
+    train_e11.add_argument("--calibration-training-dataset", required=True, type=Path)
+    train_e11.add_argument("--calibration-dataset", required=True, type=Path)
+    train_e11.add_argument("--output", required=True, type=Path)
+    predict_e11 = subcommands.add_parser(
+        "predict-e11-inference",
+        help="load a trusted E3+E7+E8/E11 artifact; never retrains",
+    )
+    predict_e11.add_argument("--artifact", required=True, type=Path)
+    predict_e11.add_argument(
+        "--features",
+        required=True,
+        type=Path,
+        help="JSON object with exactly the artifact feature names in stored order",
+    )
     backtest = subcommands.add_parser("backtest", help="run expanding-window out-of-sample evaluation")
     backtest.add_argument("--dataset", required=True, type=Path)
     backtest.add_argument("--model", required=True, choices=("poisson", "rf", "compare"))
@@ -437,6 +461,42 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         except (OSError, ValueError, RuntimeError) as exc:
             print(f"Training failed: {exc}"); return 2
+    if args.command == "train-e11-inference":
+        try:
+            artifact, metadata = train_e11_inference_artifact(
+                load_jsonl(args.training_dataset),
+                load_jsonl(args.calibration_training_dataset),
+                load_jsonl(args.calibration_dataset),
+            )
+            save_e11_inference_artifact(artifact, args.output, metadata)
+            print(json.dumps({
+                "status": "TRAINED",
+                "experiment": metadata.experiment_id,
+                "schema": metadata.artifact_schema_version,
+                "features": list(metadata.feature_names),
+                "artifact": str(args.output),
+            }, indent=2))
+            return 0
+        except (OSError, ValueError, RuntimeError) as exc:
+            print(f"Training failed: {exc}"); return 2
+    if args.command == "predict-e11-inference":
+        try:
+            payload = json.loads(args.features.read_text(encoding="utf-8"))
+            if not isinstance(payload, dict):
+                raise ValueError("features JSON must be an object")
+            artifact, metadata = load_e11_inference_artifact(args.artifact)
+            prediction = artifact.predict(payload)
+            print(json.dumps({
+                "experiment": metadata.experiment_id,
+                "model_version": metadata.model_version,
+                "raw_home_win_probability": prediction.raw_home_win_probability,
+                "calibrated_home_win_probability": prediction.calibrated_home_win_probability,
+                "home_expected_runs": prediction.run_prediction.home_expected_runs,
+                "away_expected_runs": prediction.run_prediction.away_expected_runs,
+            }, indent=2, sort_keys=True))
+            return 0
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"Inference rejected: {exc}"); return 2
     if args.command == "backtest":
         try:
             rows = load_jsonl(args.dataset)

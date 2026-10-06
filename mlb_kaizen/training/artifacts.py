@@ -16,6 +16,17 @@ class ModelArtifactMetadata:
     training_rows: int
     training_max_prediction_timestamp: str
     library: str
+    artifact_schema_version: str = "model_artifact_v1"
+    feature_names: tuple[str, ...] = ()
+    experiment_id: str = "unspecified"
+    preprocessing_version: str = "unspecified"
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "feature_names", tuple(self.feature_names))
+        if not self.artifact_schema_version:
+            raise ValueError("artifact_schema_version is required")
+        if self.training_rows < 1:
+            raise ValueError("training_rows must be positive")
 
 
 def save_model_artifact(model: Any, path: Path, metadata: ModelArtifactMetadata) -> None:

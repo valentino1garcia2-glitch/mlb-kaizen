@@ -25,3 +25,16 @@ class AnalyzeCommandTests(unittest.TestCase):
 
         self.assertIsNone(args.trained_model)
         self.assertIsNone(args.calibrator)
+
+    def test_e11_artifact_commands_require_explicit_inputs(self) -> None:
+        parser = build_parser()
+        train = parser.parse_args([
+            "train-e11-inference", "--training-dataset", "all.jsonl",
+            "--calibration-training-dataset", "earlier.jsonl",
+            "--calibration-dataset", "calibration.jsonl", "--output", "artifact/e11",
+        ])
+        predict = parser.parse_args([
+            "predict-e11-inference", "--artifact", "artifact/e11", "--features", "game.json",
+        ])
+        self.assertEqual(train.output, Path("artifact/e11"))
+        self.assertEqual(predict.features, Path("game.json"))

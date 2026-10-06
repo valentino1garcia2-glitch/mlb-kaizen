@@ -14,6 +14,24 @@ temporada fuera de muestra.
 
 ---
 
+## DD-016 — La inferencia calibrada se distribuye como una pareja inseparable
+
+El modelo Poisson E3+E7+E8 y el calibrador Platt E11 se guardan y cargan como
+un solo contrato de inferencia versionado. El contrato conserva el orden exacto
+de sus 13 features, el esquema, el experimento, las versiones de modelo y
+preprocesamiento, y los metadatos temporales de entrenamiento. La ruta de
+predicción nunca reentrena ni completa features por defecto: rechaza de forma
+explícita entradas, orden o metadatos incompatibles.
+
+**Razón:** un calibrador ajustado para otro modelo o para otro orden de
+features puede devolver una probabilidad aparentemente válida, pero equivocada.
+Hacer fallar ese caso es más seguro y reproducible que reconstruirlo de forma
+silenciosa.
+
+**Status:** LOCKED
+
+---
+
 **ID:** DD-001
 **Decisión:** Todo registro que puede representar una ausencia de dato
 (`ProbablePitcher`, `GameLineups`, `GameWeather`) lleva `provenance`
