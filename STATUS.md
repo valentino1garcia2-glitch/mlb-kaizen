@@ -1,7 +1,7 @@
 # STATUS.md — MLB KAIZEN checkpoint
 
 fecha: 2026-10-03
-commit: 0b6c548
+commit: 0fa0cc4
 
 ## Integración de recuperación — 2026-10-03
 
@@ -196,6 +196,22 @@ ni se reabre 2026. Registro: `docs/experiments/2026-10-06-e10-site-splits.md`.
 modelo mejorado E3+E7+E8; no es una nueva feature y debe mantener separación
 estricta entre ajuste, selección y test. E6-B sigue bloqueado.
 
+## E11 — calibración Platt de E3+E7+E8 (2026-10-06)
+
+**FACT:** Platt se ajustó con predicciones 2024, se eligió por 2025 y se
+reajustó con 2025 antes de medir una vez 2026. En 2026 mejora Brier
+0.245110→0.244968 y log loss 0.683250→0.682992.
+
+**DECISIÓN:** se conserva como calibración experimental del modelo mejorado.
+Es una corrección pequeña de porcentajes, no una señal nueva, validación de
+producción ni evidencia de rentabilidad. Registro:
+`docs/experiments/2026-10-06-e11-e8-temporal-platt.md`.
+
+**Próxima acción:** crear un flujo reproducible que entrene y guarde juntos un
+artefacto E3+E7+E8 y su calibrador E11, evitando que Analyst Mode cargue un
+calibrador correspondiente a otro conjunto de features. E6-B continúa
+bloqueado.
+
 ## Última verificación
 
 ```text
@@ -229,9 +245,9 @@ sección "Primera evaluación real" arriba sí son sobre partidos MLB reales.
 
 ## Próxima acción recomendada
 
-El siguiente bloque es una selección temporal de calibración Platt sobre
-E3+E7+E8. E6-B sigue bloqueado hasta obtener lineups históricos con evidencia
-pregame.
+El siguiente bloque es crear un flujo reproducible de artefactos para el
+modelo E3+E7+E8 y su calibración E11. E6-B sigue bloqueado hasta obtener
+lineups históricos con evidencia pregame.
 
 ```text
 usar probable_pitchers (ya en el dataset, sin usar en features)

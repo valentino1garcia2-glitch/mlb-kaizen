@@ -67,3 +67,12 @@ visitante. Mejoró mínimamente la validación 2025, pero no repitió el resulta
 en el test 2026: Brier 0.245138→0.245231 y log loss 0.683306→0.683501.
 **Decisión: DISCARD.** Registro:
 [`2026-10-06-e10-site-splits.md`](../experiments/2026-10-06-e10-site-splits.md).
+
+## E11 — Calibración Platt para E3+E7+E8 — 2026-10-06
+
+Con 2024 para ajustar y 2025 para seleccionar, Platt baja Brier
+0.244775→0.244062 y log loss 0.682519→0.681098. Reajustada con 2025, repite
+una mejora pequeña en 2026: Brier 0.245110→0.244968 y log loss
+0.683250→0.682992. **Decisión: KEEP como calibración experimental**, no como
+validación de producción ni rentabilidad. Registro:
+[`2026-10-06-e11-e8-temporal-platt.md`](../experiments/2026-10-06-e11-e8-temporal-platt.md).

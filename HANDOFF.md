@@ -992,3 +992,17 @@ Decisión: **DISCARD**. La representación queda trazable como
 `site_split_formula_v1`, pero no pasa al modelo activo. No se ajusta el umbral
 ni se reintenta el test final. Registro:
 `docs/experiments/2026-10-06-e10-site-splits.md`.
+
+## 30. E11 — calibración Platt temporal de E3+E7+E8 (2026-10-06)
+
+No se mezclaron años: predicciones E3+E7+E8 fuera de muestra de 2024 ajustaron
+Platt; 2025 eligió mantenerlo (Brier 0.244775→0.244062, log loss
+0.682519→0.681098); después 2025 reajustó Platt y 2026 fue medido una vez.
+Resultado 2026: Brier 0.245110→0.244968, log loss 0.683250→0.682992.
+
+Decisión: mantener como calibración experimental del feature set E3+E7+E8.
+No agrega datos de partido, sólo corrige probabilidades. No se debe cargar con
+un artefacto E3 de features distintos: el próximo bloque operacional debe
+generar/guardar el modelo E3+E7+E8 y su calibrador como una pareja trazable.
+No es validación de producción ni evidencia de rentabilidad. Registro:
+`docs/experiments/2026-10-06-e11-e8-temporal-platt.md`.
