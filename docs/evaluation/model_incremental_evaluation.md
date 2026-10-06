@@ -59,3 +59,11 @@ externas ni leakage. Frente a E3+E7+E8 en la validación 2025, Brier empeoró de
 0.244775 a 0.244870 y log loss de 0.682519 a 0.682720. **Decisión: DISCARD**;
 no se abrió 2026. Registro completo:
 [`2026-10-06-e9-rest-days.md`](../experiments/2026-10-06-e9-rest-days.md).
+
+## E10 — Rendimiento casa/visita — 2026-10-06
+
+E10 separó resultados anteriores en casa para el local y de visita para el
+visitante. Mejoró mínimamente la validación 2025, pero no repitió el resultado
+en el test 2026: Brier 0.245138→0.245231 y log loss 0.683306→0.683501.
+**Decisión: DISCARD.** Registro:
+[`2026-10-06-e10-site-splits.md`](../experiments/2026-10-06-e10-site-splits.md).

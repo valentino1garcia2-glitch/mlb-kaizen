@@ -23,20 +23,20 @@
     "7": "REAL_EVALUATION_RUN_2026-09-19_NO_EDGE_FOUND_YET",
     "8": "CORE_DONE_CLV_REAL_SNAPSHOTS_PENDING"
   },
-  "tests_passed": 135,
-  "tests_total": 135,
-  "last_verified_commit": "8ab6d8e",
+  "tests_passed": 139,
+  "tests_total": 139,
+  "last_verified_commit": "1eec6e2",
   "current_blockers": [
     "live verification of SportsGameOdds requires key and network",
     "live verification of MLB team stats and NWS weather is still pending",
     "CLV requires reliable opening/closing market snapshots",
     "current features (run rates only) show no measurable edge over a naive constant-home-win-rate baseline -- see data/evaluation/first_real_evaluation_2026-09-19.md"
   ],
-  "next_action": "run one pre-registered point-in-time home/away performance-split experiment against the E3+E7+E8 control on the same rows; E6-B remains blocked until historical/prospective lineup snapshots prove retrieved_at before game_start_time",
+  "next_action": "perform a temporally separated Platt-calibration selection for E3+E7+E8, then test once on 2026; E6-B remains blocked until historical/prospective lineup snapshots prove retrieved_at before game_start_time",
   "analyst_mode": "DONE",
   "engineering_status": "8/8 phase deliverables implemented; external evidence gates remain",
   "empirical_validation": "E3_E7_E8_PLUS_TEMPORAL_PLATT_MODEST_OOS_IMPROVEMENT_NOT_PRODUCTION_VALIDATED",
-  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure. Platt calibration improved 2026 Brier marginally. E6-A audited 12,045 historical games and found 0 historical lineups, 0 usable lineup timestamps and 0 pregame confirmations; E6_DATA_BLOCKED. E7 added strictly-prior opponent strength and improved Brier/log loss in 2025 validation and one 2026 test. E8 (2026-10-06) added a same-season, strictly-prior 15-game recent-form window and also improved Brier/log loss against E3+E7 in validation (0.245308->0.244775 Brier) and once on 2026 (0.245277->0.245110). E9 rest days failed pre-registered 2025 selection (Brier 0.244775->0.244870, log loss 0.682519->0.682720), so 2026 was not evaluated and the feature is discarded. E7/E8 remain small experimental improvements, not production validation or proof of profitability.",
+  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure. Platt calibration improved 2026 Brier marginally. E6-A audited 12,045 historical games and found 0 historical lineups, 0 usable lineup timestamps and 0 pregame confirmations; E6_DATA_BLOCKED. E7 added strictly-prior opponent strength and improved Brier/log loss in 2025 validation and one 2026 test. E8 (2026-10-06) added a same-season, strictly-prior 15-game recent-form window and also improved Brier/log loss against E3+E7 in validation (0.245308->0.244775 Brier) and once on 2026 (0.245277->0.245110). E9 rest days failed 2025 selection and was not tested on 2026. E10 home/away splits improved minimally in 2025 but failed 2026 replication (Brier 0.245138->0.245231; log loss 0.683306->0.683501), so it is discarded. E7/E8 remain small experimental improvements, not production validation or proof of profitability.",
   "recovery": {
     "integrated_at": "2026-10-03",
     "source_archive": "MLB_KAIZEN.zip",

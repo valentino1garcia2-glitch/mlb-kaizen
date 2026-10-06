@@ -51,6 +51,8 @@ Recent form (E8)             mlb_kaizen/training/build_dataset.py
                              docs/features/recent_form.md
 Rest days (E9, negative)     mlb_kaizen/training/build_dataset.py
                              docs/features/rest_days.md
+Site splits (E10, negative)  mlb_kaizen/training/build_dataset.py
+                             docs/features/site_splits.md
 League average definition    docs/features/league_average.md
 ```
 

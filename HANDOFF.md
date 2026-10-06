@@ -979,3 +979,16 @@ Decisión pre-registrada aplicada: **DISCARD**. No se corrió 2026 y la feature
 no entra al modelo activo. Código y ficha `rest_days_formula_v1` se preservan
 para trazabilidad, no como evidencia favorable. Registro:
 `docs/experiments/2026-10-06-e9-rest-days.md`.
+
+## 29. E10 — separación casa/visita, resultado no replicado (2026-10-06)
+
+E10 añadió ofensiva y prevención previas en casa para el local y de visita
+para el visitante, reiniciadas por temporada y con cinco juegos mínimos por
+condición. Validación 2025: mejora muy pequeña (Brier 0.244756→0.244732;
+log loss 0.682480→0.682419). Se abrió una vez el test 2026 y no replicó:
+Brier 0.245138→0.245231; log loss 0.683306→0.683501.
+
+Decisión: **DISCARD**. La representación queda trazable como
+`site_split_formula_v1`, pero no pasa al modelo activo. No se ajusta el umbral
+ni se reintenta el test final. Registro:
+`docs/experiments/2026-10-06-e10-site-splits.md`.

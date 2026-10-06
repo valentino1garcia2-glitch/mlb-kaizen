@@ -51,6 +51,8 @@ OPPONENT_STRENGTH_FORMULA_VERSION = "opponent_strength_formula_v1"
 RECENT_FORM_WINDOW = 15
 RECENT_FORM_FORMULA_VERSION = "recent_form_formula_v1"
 REST_DAYS_FORMULA_VERSION = "rest_days_formula_v1"
+MINIMUM_PRIOR_SITE_GAMES = 5
+SITE_SPLIT_FORMULA_VERSION = "site_split_formula_v1"
 
 CANONICAL_VENUE_NAMES = {
     "UNIQLO Field at Dodger Stadium": "Dodger Stadium",
@@ -494,6 +496,96 @@ def build_point_in_time_rows_with_opponent_strength_recent_form_and_rest_days(
 
         last_start[game.home_team_id] = game
         last_start[game.away_team_id] = game
+
+    return rows
+
+
+def build_point_in_time_rows_with_opponent_strength_recent_form_and_site_splits(
+    games: list[CompletedGameResult],
+    *,
+    minimum_prior_games: int = MINIMUM_PRIOR_GAMES,
+    minimum_league_games_for_average: int = MINIMUM_LEAGUE_GAMES_FOR_AVERAGE,
+    minimum_prior_matchups: int = 1,
+    recent_form_window: int = RECENT_FORM_WINDOW,
+    minimum_prior_site_games: int = MINIMUM_PRIOR_SITE_GAMES,
+    home_advantage: float = DEFAULT_HOME_ADVANTAGE,
+) -> list[HistoricalGameRow]:
+    """Build E8 rows plus same-season prior home/away performance splits."""
+
+    if minimum_prior_site_games < 1:
+        raise ValueError("minimum_prior_site_games must be at least 1")
+
+    base_rows = build_point_in_time_rows_with_opponent_strength_and_recent_form(
+        games,
+        minimum_prior_games=minimum_prior_games,
+        minimum_league_games_for_average=minimum_league_games_for_average,
+        minimum_prior_matchups=minimum_prior_matchups,
+        recent_form_window=recent_form_window,
+        home_advantage=home_advantage,
+    )
+    base_by_game_id = {row.game_id: row for row in base_rows}
+    home_splits: dict[str, _TeamAccumulator] = {}
+    away_splits: dict[str, _TeamAccumulator] = {}
+    split_season: dict[str, int] = {}
+    league_runs = league_games = 0
+    rows: list[HistoricalGameRow] = []
+
+    def reset_team_for_season(team_id: str, season: int) -> None:
+        if split_season.get(team_id) != season:
+            split_season[team_id] = season
+            home_splits[team_id] = _TeamAccumulator()
+            away_splits[team_id] = _TeamAccumulator()
+
+    for game in sorted(games, key=lambda item: (item.start_time, item.game_id)):
+        season = game.official_date.year
+        home_split = home_splits.get(game.home_team_id, _TeamAccumulator()) if split_season.get(game.home_team_id) == season else _TeamAccumulator()
+        away_split = away_splits.get(game.away_team_id, _TeamAccumulator()) if split_season.get(game.away_team_id) == season else _TeamAccumulator()
+        base = base_by_game_id.get(game.game_id)
+
+        if (
+            base is not None
+            and home_split.games_played >= minimum_prior_site_games
+            and away_split.games_played >= minimum_prior_site_games
+        ):
+            league_average = league_runs / league_games
+            rows.append(
+                HistoricalGameRow(
+                    game_id=base.game_id,
+                    official_date=base.official_date,
+                    prediction_timestamp=base.prediction_timestamp,
+                    feature_timestamp=base.feature_timestamp,
+                    features={
+                        **base.features,
+                        "home_site_offensive_index": run_rate_index(
+                            home_split.runs_scored / home_split.games_played, league_average
+                        ),
+                        "home_site_run_prevention_index": run_rate_index(
+                            home_split.runs_allowed / home_split.games_played, league_average
+                        ),
+                        "away_site_offensive_index": run_rate_index(
+                            away_split.runs_scored / away_split.games_played, league_average
+                        ),
+                        "away_site_run_prevention_index": run_rate_index(
+                            away_split.runs_allowed / away_split.games_played, league_average
+                        ),
+                    },
+                    home_runs=base.home_runs,
+                    away_runs=base.away_runs,
+                )
+            )
+
+        reset_team_for_season(game.home_team_id, season)
+        reset_team_for_season(game.away_team_id, season)
+        home_split = home_splits[game.home_team_id]
+        home_split.runs_scored += game.home_runs
+        home_split.runs_allowed += game.away_runs
+        home_split.games_played += 1
+        away_split = away_splits[game.away_team_id]
+        away_split.runs_scored += game.away_runs
+        away_split.runs_allowed += game.home_runs
+        away_split.games_played += 1
+        league_runs += game.home_runs + game.away_runs
+        league_games += 2
 
     return rows
 

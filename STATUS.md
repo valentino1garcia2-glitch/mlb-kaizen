@@ -1,7 +1,7 @@
 # STATUS.md — MLB KAIZEN checkpoint
 
 fecha: 2026-10-03
-commit: 8ab6d8e
+commit: 1eec6e2
 
 ## Integración de recuperación — 2026-10-03
 
@@ -182,6 +182,20 @@ no compensa el empeoramiento de probabilidades. Detalle:
 **Próxima acción:** evaluar una sola representación point-in-time de rendimiento
 separado en casa/visita, comparada contra E3+E7+E8. E6-B continúa bloqueado.
 
+## E10 — rendimiento casa/visita (2026-10-06)
+
+**FACT:** E10 separó los partidos previos en casa para el local y de visita
+para el visitante. La pequeña mejora en validación 2025 (Brier 0.244756 a
+0.244732; log loss 0.682480 a 0.682419) permitió el test único de 2026, donde
+no se repitió: Brier 0.245138 a 0.245231 y log loss 0.683306 a 0.683501.
+
+**DECISIÓN:** descartada para el modelo activo. No se modifican los umbrales
+ni se reabre 2026. Registro: `docs/experiments/2026-10-06-e10-site-splits.md`.
+
+**Próxima acción:** reevaluar de manera temporal la calibración Platt sobre el
+modelo mejorado E3+E7+E8; no es una nueva feature y debe mantener separación
+estricta entre ajuste, selección y test. E6-B sigue bloqueado.
+
 ## Última verificación
 
 ```text
@@ -215,9 +229,9 @@ sección "Primera evaluación real" arriba sí son sobre partidos MLB reales.
 
 ## Próxima acción recomendada
 
-El siguiente experimento controlado es rendimiento separado en casa/visita,
-comparado contra E3+E7+E8. E6-B sigue bloqueado hasta obtener lineups
-históricos con evidencia pregame.
+El siguiente bloque es una selección temporal de calibración Platt sobre
+E3+E7+E8. E6-B sigue bloqueado hasta obtener lineups históricos con evidencia
+pregame.
 
 ```text
 usar probable_pitchers (ya en el dataset, sin usar en features)
