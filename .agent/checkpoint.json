@@ -23,9 +23,9 @@
     "7": "REAL_EVALUATION_RUN_2026-09-19_NO_EDGE_FOUND_YET",
     "8": "CORE_DONE_CLV_REAL_SNAPSHOTS_PENDING"
   },
-  "tests_passed": 0,
+  "tests_passed": 161,
   "tests_total": 161,
-  "last_verified_commit": "178de36",
+  "last_verified_commit": "887c634",
   "current_blockers": [
     "live verification of SportsGameOdds requires key and network",
     "live verification of MLB team stats and NWS weather is still pending",
