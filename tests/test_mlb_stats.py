@@ -418,6 +418,7 @@ class MLBStatsTests(unittest.TestCase):
                                 "gamePk": 777245,
                                 "gameDate": "2025-07-04T15:05:00Z",
                                 "officialDate": "2025-07-04",
+                                "gameType": "R",
                                 "status": {"detailedState": "Final"},
                                 "teams": {
                                     "away": {"team": {"id": 111, "name": "Boston Red Sox"}, "score": 11},
@@ -451,6 +452,7 @@ class MLBStatsTests(unittest.TestCase):
         self.assertEqual(result.away_runs, 11)
         self.assertEqual(result.home_runs, 2)
         self.assertEqual(result.official_date, date(2025, 7, 4))
+        self.assertEqual(result.game_type, "R")
 
     def test_parse_completed_games_skips_final_status_with_no_published_score(self) -> None:
         response = RetrievedJson(

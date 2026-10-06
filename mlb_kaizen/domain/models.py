@@ -136,6 +136,7 @@ class CompletedGameResult:
     home_runs: int
     away_runs: int
     provenance: DataProvenance
+    game_type: str | None = None
 
     def __post_init__(self) -> None:
         if not self.game_id or not self.home_team_id or not self.away_team_id:
@@ -145,6 +146,8 @@ class CompletedGameResult:
         _require_aware(self.start_time, "start_time")
         if self.home_runs < 0 or self.away_runs < 0:
             raise ValueError("run totals cannot be negative")
+        if self.game_type is not None and not self.game_type.strip():
+            raise ValueError("game_type cannot be empty when supplied")
 
 
 @dataclass(frozen=True, slots=True)

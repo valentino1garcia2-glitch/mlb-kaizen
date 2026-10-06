@@ -272,10 +272,30 @@ es un smoke técnico y no debe evaluarse como una predicción de temporada
 regular. E12 no ha entrenado ni calibrado un modelo nuevo. Registro:
 `docs/experiments/2026-10-06-e12-postseason-readiness.md`.
 
+## E12-B preparatorio — archivo histórico oficial (2026-10-06)
+
+**FACT:** el proyecto ahora puede guardar resultados finales oficiales en un
+JSONL inmutable que conserva `game_type`, marcador, hora de inicio y
+procedencia. La captura no puede sobrescribirse; archivos con esquema
+incompatible o IDs duplicados fallan de forma explícita. La primera descarga
+local de 2012 obtuvo 2,961 resultados y expuso tipos adicionales de MLB
+(`A`, `E`, `S`) además de `R` y los de playoffs (`D`, `F`, `L`, `W`).
+
+**INTERPRETACIÓN:** esos tipos adicionales no se pueden incluir por defecto en
+un experimento de temporada regular ni de playoffs. E12 tendrá que declarar
+su filtro antes de construir features. El archivo 2012 es sólo una captura
+parcial de la colección 2012–2025: aún no autoriza entrenamiento, calibración
+ni predicción de playoffs.
+
+**PRÓXIMA ACCIÓN:** completar capturas oficiales 2013–2025, consolidarlas y
+auditar cobertura, tipos, duplicados y hash; entonces pre-registrar el
+experimento E12 separado. Registro:
+`docs/experiments/2026-10-06-e12-historical-collection.md`.
+
 ## Última verificación
 
 ```text
-157 / 157 PASS
+161 / 161 PASS
 ```
 
 Comando:

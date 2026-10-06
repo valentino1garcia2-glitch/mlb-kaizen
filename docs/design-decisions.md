@@ -61,6 +61,22 @@ temporada regular. Bloquearla es más honesto que etiquetarla como equivalente.
 
 ---
 
+## DD-019 — Resultados históricos oficiales se archivan separados de las features
+
+La colección E12 guarda cada resultado final oficial con `game_type`, marcador,
+hora de inicio y procedencia en un JSONL versionado. El `retrieved_at` acredita
+cuándo se descargó el resultado, no que el resultado fuera conocido antes del
+partido. El archivo no se sobrescribe; los constructores de features deben
+seguir usando sólo partidos estrictamente anteriores al que se predice.
+
+**Razón:** separar el archivo de resultados de un dataset de entrenamiento
+evita confundir datos retrospectivos legítimos con evidencia pregame, y permite
+auditar la separación entre temporada regular y playoffs antes de E12.
+
+**Status:** LOCKED
+
+---
+
 **ID:** DD-001
 **Decisión:** Todo registro que puede representar una ausencia de dato
 (`ProbablePitcher`, `GameLineups`, `GameWeather`) lleva `provenance`

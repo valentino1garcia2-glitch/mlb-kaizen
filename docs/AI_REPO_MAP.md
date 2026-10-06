@@ -31,6 +31,10 @@ analysis status enums        mlb_kaizen/domain/models.py
 MLB schedule/pitchers/lineups/venue/team stats/league average
                              mlb_kaizen/data/mlb_stats.py
                              tests/test_mlb_stats.py
+Historical final-result archive (E12)
+                             mlb_kaizen/data/historical_results.py
+                             scripts/collect_historical_results.py
+                             tests/test_historical_results.py
 NWS weather                  mlb_kaizen/data/weather.py
                              tests/test_weather.py
 Provider contracts           mlb_kaizen/data/providers.py

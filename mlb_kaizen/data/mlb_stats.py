@@ -177,6 +177,7 @@ class MLBStatsProvider:
             home_runs=int(home["score"]),
             away_runs=int(away["score"]),
             provenance=provenance,
+            game_type=str(raw_game["gameType"]) if raw_game.get("gameType") else None,
         )
 
     def probable_pitchers_on(self, game_date: date) -> list[ProbablePitcher]:
