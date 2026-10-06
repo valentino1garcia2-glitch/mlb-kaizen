@@ -23,20 +23,20 @@
     "7": "REAL_EVALUATION_RUN_2026-09-19_NO_EDGE_FOUND_YET",
     "8": "CORE_DONE_CLV_REAL_SNAPSHOTS_PENDING"
   },
-  "tests_passed": 151,
-  "tests_total": 151,
-  "last_verified_commit": "e10739e",
+  "tests_passed": 154,
+  "tests_total": 154,
+  "last_verified_commit": "6a1e0fe",
   "current_blockers": [
     "live verification of SportsGameOdds requires key and network",
     "live verification of MLB team stats and NWS weather is still pending",
     "CLV requires reliable opening/closing market snapshots",
     "current features (run rates only) show no measurable edge over a naive constant-home-win-rate baseline -- see data/evaluation/first_real_evaluation_2026-09-19.md"
   ],
-  "next_action": "connect live verified schedule/result capture to the append-only E3+E7+E8 daily feature snapshot and then to explicit E11 artifact inference; E6-B remains blocked until historical/prospective lineup snapshots prove retrieved_at before game_start_time",
+  "next_action": "run daily-e11-inference against a real future MLB game before its start and audit its append-only snapshot/prediction record; E6-B remains blocked until historical/prospective lineup snapshots prove retrieved_at before game_start_time",
   "analyst_mode": "DONE",
   "engineering_status": "8/8 phase deliverables implemented; external evidence gates remain",
   "empirical_validation": "E3_E7_E8_PLUS_MATCHED_TEMPORAL_PLATT_MODEST_OOS_IMPROVEMENT_NOT_PRODUCTION_VALIDATED",
-  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure. E6-A audited 12,045 historical games and found 0 historical lineups, 0 usable lineup timestamps and 0 pregame confirmations; E6_DATA_BLOCKED. E7 added strictly-prior opponent strength and E8 added a same-season 15-game recent-form window; both improved Brier/log loss in validation and one 2026 test. E9 rest days failed 2025 selection. E10 home/away splits failed 2026 replication. E11 selected Platt for exactly E3+E7+E8 using 2024 fit/2025 selection and improved 2026 Brier 0.245110->0.244968 and log loss 0.683250->0.682992. The E3+E7+E8/E11 pair now has one strict, versioned inference artifact (DD-016), which preserves all 13 ordered features and rejects incompatible inputs without retraining. Daily E3+E7+E8 vector snapshots now append their ordered feature payload plus source/prediction timestamps under DD-017, refusing post-prediction data. E7/E8/E11 are small experimental improvements, not production validation or proof of profitability.",
+  "notes": "E2-E5 recovered 2026-10-03 from user-provided data and execution records. E3 selected alpha=0.0001 with a clean 2022-2024/2025 validation procedure. E6-A audited 12,045 historical games and found 0 historical lineups, 0 usable lineup timestamps and 0 pregame confirmations; E6_DATA_BLOCKED. E7 added strictly-prior opponent strength and E8 added a same-season 15-game recent-form window; both improved Brier/log loss in validation and one 2026 test. E9 rest days failed 2025 selection. E10 home/away splits failed 2026 replication. E11 selected Platt for exactly E3+E7+E8 using 2024 fit/2025 selection and improved 2026 Brier 0.245110->0.244968 and log loss 0.683250->0.682992. The E3+E7+E8/E11 pair now has one strict, versioned inference artifact (DD-016), which preserves all 13 ordered features and rejects incompatible inputs without retraining. Daily E3+E7+E8 vector snapshots append their ordered feature payload plus source/prediction timestamps under DD-017, refusing post-prediction data; daily-e11-inference now connects verified live schedule/results to that snapshot and then to persisted E11 output without retraining. E7/E8/E11 are small experimental improvements, not production validation or proof of profitability.",
   "recovery": {
     "integrated_at": "2026-10-03",
     "source_archive": "MLB_KAIZEN.zip",

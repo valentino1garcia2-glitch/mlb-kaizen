@@ -240,6 +240,17 @@ No crea ni valida una señal nueva; hace reproducible la información diaria que
 alimentará el artefacto experimental E11. Contrato:
 `docs/features/e8_daily_snapshot.md`.
 
+## Flujo diario conectado E3+E7+E8/E11 (2026-10-06)
+
+**FACT:** `daily-e11-inference` obtiene el schedule y resultados finalizados
+de MLB, construye el snapshot point-in-time, lo persiste y carga el artefacto
+E11 explícito para guardar la probabilidad cruda y calibrada. No reentrena.
+
+**PROTECCIÓN:** si el juego no pertenece al calendario, ya inició, falta
+historia o una fuente fue recuperada tarde, no guarda predicción. Una captura
+correcta acredita integridad de inputs, no convierte el modelo experimental en
+una estrategia de apuestas validada.
+
 ## Última verificación
 
 ```text
@@ -273,11 +284,10 @@ sección "Primera evaluación real" arriba sí son sobre partidos MLB reales.
 
 ## Próxima acción recomendada
 
-El siguiente bloque debe conectar la captura en vivo de schedule/resultados
-verificados con el snapshot diario y después con el artefacto E11, manteniendo
-una selección explícita del artefacto confiable. No se debe construir un vector
-diario con datos retrospectivos ni reabrir E6-B: éste sigue bloqueado hasta
-obtener lineups históricos con evidencia pregame.
+El siguiente bloque debe probar el comando con una captura MLB real antes de
+un juego futuro y revisar el registro append-only resultante. No se debe
+construir un vector diario con datos retrospectivos ni reabrir E6-B: éste
+sigue bloqueado hasta obtener lineups históricos con evidencia pregame.
 
 ```text
 usar probable_pitchers (ya en el dataset, sin usar en features)

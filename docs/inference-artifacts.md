@@ -29,5 +29,30 @@ predict-e11-inference \
   --features pregame_e3_e7_e8_features.json
 ```
 
+## Flujo diario conectado
+
+`daily-e11-inference` conecta la fuente MLB ya existente con el snapshot y el
+artefacto. Requiere una fecha, el identificador exacto del juego, el inicio
+del histórico de resultados y una ruta explícita al artefacto confiable:
+
+```text
+daily-e11-inference \
+  --date 2026-10-20 \
+  --game-id mlb:123456 \
+  --history-start 2022-03-01 \
+  --artifact artifacts/e3-e7-e8-e11
+```
+
+El comando consulta el calendario y los resultados finales disponibles,
+verifica que el juego no haya empezado, construye el vector E3+E7+E8 y lo
+guarda append-only. Luego carga —sin reentrenar— el artefacto E11 y persiste
+la predicción cruda y calibrada. Si falta historia, el juego no pertenece al
+calendario solicitado, una fuente llegó tarde o el partido ya inició, falla
+sin escribir una predicción.
+
+`data_quality=1.0` en ese registro significa únicamente que se cumplieron los
+requisitos estrictos del vector de entrada; no cambia el estado experimental
+del modelo ni significa calidad predictiva perfecta.
+
 La inferencia permanece experimental: este contrato garantiza reproducibilidad,
 no validación de producción ni rentabilidad.

@@ -1,6 +1,7 @@
 """Command-line contracts for selecting trusted analysis artifacts."""
 
 from pathlib import Path
+from datetime import date
 import unittest
 
 from mlb_kaizen.interface.cli import build_parser
@@ -38,3 +39,12 @@ class AnalyzeCommandTests(unittest.TestCase):
         ])
         self.assertEqual(train.output, Path("artifact/e11"))
         self.assertEqual(predict.features, Path("game.json"))
+
+    def test_daily_e11_inference_requires_live_scope_and_trusted_artifact(self) -> None:
+        args = build_parser().parse_args([
+            "daily-e11-inference", "--date", "2026-06-01", "--game-id", "mlb:123",
+            "--history-start", "2022-03-01", "--artifact", "artifacts/e11",
+        ])
+        self.assertEqual(args.date, date(2026, 6, 1))
+        self.assertEqual(args.history_start, date(2022, 3, 1))
+        self.assertEqual(args.artifact, Path("artifacts/e11"))

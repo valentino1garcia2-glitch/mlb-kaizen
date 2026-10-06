@@ -24,6 +24,7 @@ from mlb_kaizen.domain.models import (
     TeamRunProfile,
 )
 from mlb_kaizen.features.run_profile import compute_team_run_profile
+from mlb_kaizen.features.e8_daily_snapshot import build_e8_daily_feature_snapshot
 from mlb_kaizen.observability.logging import configure_logging
 from mlb_kaizen.reporting.html import render_analysis_html, render_leaderboard_html
 from mlb_kaizen.reporting.text import render_analysis_report
@@ -228,6 +229,14 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="JSON object with exactly the artifact feature names in stored order",
     )
+    daily_e11 = subcommands.add_parser(
+        "daily-e11-inference",
+        help="capture live inputs, snapshot E3+E7+E8, then infer with trusted E11",
+    )
+    daily_e11.add_argument("--date", required=True, type=date.fromisoformat)
+    daily_e11.add_argument("--game-id", required=True)
+    daily_e11.add_argument("--history-start", required=True, type=date.fromisoformat)
+    daily_e11.add_argument("--artifact", required=True, type=Path)
     backtest = subcommands.add_parser("backtest", help="run expanding-window out-of-sample evaluation")
     backtest.add_argument("--dataset", required=True, type=Path)
     backtest.add_argument("--model", required=True, choices=("poisson", "rf", "compare"))
@@ -246,6 +255,72 @@ def _http_client(settings: Settings) -> CachedHttpClient:
         retries=settings.http_retries,
         cache_ttl_seconds=settings.cache_ttl_seconds,
     )
+
+
+def _run_daily_e11_inference(
+    *,
+    provider: MLBStatsProvider,
+    database: KaizenDatabase,
+    game_date: date,
+    game_id: str,
+    history_start: date,
+    artifact_path: Path,
+    prediction_timestamp: datetime,
+) -> dict[str, Any]:
+    """Fetch verified live inputs, persist the vector, then infer with E11."""
+
+    games = provider.games_on(game_date)
+    target = next((item for item in games if item.game_id == game_id), None)
+    if target is None:
+        raise ValueError(f"game_id {game_id!r} is not present in the requested schedule")
+    snapshot = build_e8_daily_feature_snapshot(
+        target,
+        provider.completed_games(history_start, game_date),
+        prediction_timestamp=prediction_timestamp,
+    )
+    artifact, metadata = load_e11_inference_artifact(artifact_path)
+    prediction = artifact.predict(snapshot.features)
+    database.initialise()
+    database.store_game_snapshot(target)
+    database.store_inference_feature_snapshot(snapshot)
+    prediction_id = database.store_prediction(
+        game_id=target.game_id,
+        prediction_timestamp=snapshot.prediction_timestamp,
+        data_timestamp=snapshot.source_timestamp,
+        model_version=metadata.model_version,
+        feature_version=snapshot.feature_schema_version,
+        raw_probability=prediction.raw_home_win_probability,
+        calibrated_probability=prediction.calibrated_home_win_probability,
+        uncertainty=None,
+        data_quality=1.0,
+        model_input={
+            "feature_schema_version": snapshot.feature_schema_version,
+            "formula_version": snapshot.formula_version,
+            "source_timestamp": snapshot.source_timestamp,
+            "features": snapshot.features,
+        },
+        model_output={
+            "experiment": metadata.experiment_id,
+            "raw_home_win_probability": prediction.raw_home_win_probability,
+            "calibrated_home_win_probability": prediction.calibrated_home_win_probability,
+            "home_expected_runs": prediction.run_prediction.home_expected_runs,
+            "away_expected_runs": prediction.run_prediction.away_expected_runs,
+            "model_validation_status": "experimental",
+        },
+    )
+    return {
+        "status": "EXPERIMENTAL_PREGAME_PREDICTION_SAVED",
+        "prediction_id": prediction_id,
+        "game_id": target.game_id,
+        "prediction_timestamp": snapshot.prediction_timestamp,
+        "source_timestamp": snapshot.source_timestamp,
+        "experiment": metadata.experiment_id,
+        "raw_home_win_probability": prediction.raw_home_win_probability,
+        "calibrated_home_win_probability": prediction.calibrated_home_win_probability,
+        "home_expected_runs": prediction.run_prediction.home_expected_runs,
+        "away_expected_runs": prediction.run_prediction.away_expected_runs,
+        "note": "Experimental model output; not evidence of betting profitability.",
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -497,6 +572,21 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             print(f"Inference rejected: {exc}"); return 2
+    if args.command == "daily-e11-inference":
+        try:
+            output = _run_daily_e11_inference(
+                provider=MLBStatsProvider(_http_client(settings)),
+                database=database,
+                game_date=args.date,
+                game_id=args.game_id,
+                history_start=args.history_start,
+                artifact_path=args.artifact,
+                prediction_timestamp=datetime.now(UTC),
+            )
+            print(json.dumps(output, default=_json_default, indent=2, sort_keys=True))
+            return 0
+        except (DataProviderError, OSError, ValueError, RuntimeError) as exc:
+            print(f"Daily inference rejected: {exc}"); return 2
     if args.command == "backtest":
         try:
             rows = load_jsonl(args.dataset)
