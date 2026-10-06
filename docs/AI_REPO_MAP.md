@@ -47,6 +47,8 @@ TeamRunProfile               mlb_kaizen/features/run_profile.py
                              tests/test_run_profile.py
 Opponent strength (E7)       mlb_kaizen/training/build_dataset.py
                              docs/features/opponent_strength.md
+Recent form (E8)             mlb_kaizen/training/build_dataset.py
+                             docs/features/recent_form.md
 League average definition    docs/features/league_average.md
 ```
 

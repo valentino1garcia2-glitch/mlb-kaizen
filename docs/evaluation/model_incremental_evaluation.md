@@ -41,3 +41,13 @@ En comparación justa sobre las mismas filas, el control E3 pasa de Brier
 0.245522 a 0.245235 en validación 2025 y de 0.245949 a 0.245633 en el test
 final 2026; log loss también baja en ambos cortes. **Decisión: KEEP como
 señal experimental**, aún no como modelo validado ni ventaja rentable.
+
+## E8 — Forma reciente — 2026-10-06
+
+E8 añade ofensiva y prevención de los 15 partidos previos de la misma
+temporada; no transporta forma del año anterior. En la cohorte común E8, Brier
+bajó de 0.245308 a 0.244775 en la validación 2025 y de 0.245277 a 0.245110 en
+el test final 2026; log loss también disminuyó en ambos. **Decisión: KEEP como
+señal experimental**, no validación de producción ni ventaja rentable. El
+protocolo y evidencia están en
+[`2026-10-06-e8-recent-form.md`](../experiments/2026-10-06-e8-recent-form.md).

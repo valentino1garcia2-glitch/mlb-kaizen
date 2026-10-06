@@ -46,6 +46,11 @@ MINIMUM_GAMES_AT_VENUE = 20
 #: historical experiment's meaning.
 OPPONENT_STRENGTH_FORMULA_VERSION = "opponent_strength_formula_v1"
 
+#: The pre-registered number of completed games used by the E8 recent-form
+#: experiment.  It is a feature-contract choice, not a value tuned on 2026.
+RECENT_FORM_WINDOW = 15
+RECENT_FORM_FORMULA_VERSION = "recent_form_formula_v1"
+
 CANONICAL_VENUE_NAMES = {
     "UNIQLO Field at Dodger Stadium": "Dodger Stadium",
     "Rate Field": "Guaranteed Rate Field",
@@ -278,6 +283,153 @@ def build_point_in_time_rows_with_opponent_strength(
         home_opponents[game.away_team_id] = home_opponents.get(game.away_team_id, 0) + 1
         away_opponents = opponent_counts.setdefault(game.away_team_id, {})
         away_opponents[game.home_team_id] = away_opponents.get(game.home_team_id, 0) + 1
+        league_runs += game.home_runs + game.away_runs
+        league_games += 2
+
+    return rows
+
+
+def build_point_in_time_rows_with_opponent_strength_and_recent_form(
+    games: list[CompletedGameResult],
+    *,
+    minimum_prior_games: int = MINIMUM_PRIOR_GAMES,
+    minimum_league_games_for_average: int = MINIMUM_LEAGUE_GAMES_FOR_AVERAGE,
+    minimum_prior_matchups: int = 1,
+    recent_form_window: int = RECENT_FORM_WINDOW,
+    home_advantage: float = DEFAULT_HOME_ADVANTAGE,
+) -> list[HistoricalGameRow]:
+    """Build E7 rows plus same-season, strictly-prior recent-form inputs.
+
+    The recent window holds only completed games earlier than the current row
+    and is cleared for a club when its next season begins.  This deliberately
+    avoids treating last season's final games as current form.
+    """
+
+    if minimum_prior_games < 1:
+        raise ValueError("minimum_prior_games must be at least 1")
+    if minimum_league_games_for_average < 1:
+        raise ValueError("minimum_league_games_for_average must be at least 1")
+    if minimum_prior_matchups < 1:
+        raise ValueError("minimum_prior_matchups must be at least 1")
+    if recent_form_window < 1:
+        raise ValueError("recent_form_window must be at least 1")
+
+    team_totals: dict[str, _TeamAccumulator] = {}
+    opponent_counts: dict[str, dict[str, int]] = {}
+    recent_results: dict[str, list[tuple[int, int]]] = {}
+    recent_season: dict[str, int] = {}
+    league_runs = league_games = 0
+    rows: list[HistoricalGameRow] = []
+
+    def schedule_profile(team_id: str, league_average: float) -> tuple[float, float]:
+        opponents = opponent_counts.get(team_id, {})
+        matchup_count = sum(opponents.values())
+        if matchup_count < minimum_prior_matchups:
+            raise ValueError("insufficient prior opponents for schedule profile")
+        weighted_offence = weighted_prevention = 0.0
+        for opponent_id, times_faced in opponents.items():
+            opponent = team_totals[opponent_id]
+            weighted_offence += times_faced * run_rate_index(
+                opponent.runs_scored / opponent.games_played, league_average
+            )
+            weighted_prevention += times_faced * run_rate_index(
+                opponent.runs_allowed / opponent.games_played, league_average
+            )
+        return weighted_offence / matchup_count, weighted_prevention / matchup_count
+
+    def prior_recent(team_id: str, season: int) -> list[tuple[int, int]]:
+        if recent_season.get(team_id) != season:
+            return []
+        return recent_results.get(team_id, [])
+
+    def record_recent(team_id: str, season: int, scored: int, allowed: int) -> None:
+        if recent_season.get(team_id) != season:
+            recent_season[team_id] = season
+            recent_results[team_id] = []
+        history = recent_results[team_id]
+        history.append((scored, allowed))
+        if len(history) > recent_form_window:
+            history.pop(0)
+
+    for game in sorted(games, key=lambda item: (item.start_time, item.game_id)):
+        season = game.official_date.year
+        home = team_totals.get(game.home_team_id, _TeamAccumulator())
+        away = team_totals.get(game.away_team_id, _TeamAccumulator())
+        home_recent = prior_recent(game.home_team_id, season)
+        away_recent = prior_recent(game.away_team_id, season)
+        home_matchups = sum(opponent_counts.get(game.home_team_id, {}).values())
+        away_matchups = sum(opponent_counts.get(game.away_team_id, {}).values())
+
+        eligible = (
+            home.games_played >= minimum_prior_games
+            and away.games_played >= minimum_prior_games
+            and league_games >= minimum_league_games_for_average
+            and home_matchups >= minimum_prior_matchups
+            and away_matchups >= minimum_prior_matchups
+            and len(home_recent) >= recent_form_window
+            and len(away_recent) >= recent_form_window
+        )
+        if eligible:
+            league_average = league_runs / league_games
+            home_opponent_offence, home_opponent_prevention = schedule_profile(
+                game.home_team_id, league_average
+            )
+            away_opponent_offence, away_opponent_prevention = schedule_profile(
+                game.away_team_id, league_average
+            )
+            rows.append(
+                HistoricalGameRow(
+                    game_id=game.game_id,
+                    official_date=game.official_date,
+                    prediction_timestamp=game.start_time,
+                    feature_timestamp=game.start_time,
+                    features={
+                        "home_offensive_index": run_rate_index(home.runs_scored / home.games_played, league_average),
+                        "away_offensive_index": run_rate_index(away.runs_scored / away.games_played, league_average),
+                        "home_run_prevention_index": run_rate_index(home.runs_allowed / home.games_played, league_average),
+                        "away_run_prevention_index": run_rate_index(away.runs_allowed / away.games_played, league_average),
+                        "home_advantage": home_advantage,
+                        "home_opponent_offensive_index": home_opponent_offence,
+                        "home_opponent_run_prevention_index": home_opponent_prevention,
+                        "away_opponent_offensive_index": away_opponent_offence,
+                        "away_opponent_run_prevention_index": away_opponent_prevention,
+                        "home_recent_offensive_index": run_rate_index(
+                            sum(scored for scored, _ in home_recent) / recent_form_window,
+                            league_average,
+                        ),
+                        "home_recent_run_prevention_index": run_rate_index(
+                            sum(allowed for _, allowed in home_recent) / recent_form_window,
+                            league_average,
+                        ),
+                        "away_recent_offensive_index": run_rate_index(
+                            sum(scored for scored, _ in away_recent) / recent_form_window,
+                            league_average,
+                        ),
+                        "away_recent_run_prevention_index": run_rate_index(
+                            sum(allowed for _, allowed in away_recent) / recent_form_window,
+                            league_average,
+                        ),
+                    },
+                    home_runs=game.home_runs,
+                    away_runs=game.away_runs,
+                )
+            )
+
+        # All state changes happen after row construction.  Therefore a
+        # game's own score is available only to later games.
+        home.runs_scored += game.home_runs
+        home.runs_allowed += game.away_runs
+        home.games_played += 1
+        away.runs_scored += game.away_runs
+        away.runs_allowed += game.home_runs
+        away.games_played += 1
+        team_totals[game.home_team_id], team_totals[game.away_team_id] = home, away
+        home_opponents = opponent_counts.setdefault(game.home_team_id, {})
+        home_opponents[game.away_team_id] = home_opponents.get(game.away_team_id, 0) + 1
+        away_opponents = opponent_counts.setdefault(game.away_team_id, {})
+        away_opponents[game.home_team_id] = away_opponents.get(game.home_team_id, 0) + 1
+        record_recent(game.home_team_id, season, game.home_runs, game.away_runs)
+        record_recent(game.away_team_id, season, game.away_runs, game.home_runs)
         league_runs += game.home_runs + game.away_runs
         league_games += 2
 

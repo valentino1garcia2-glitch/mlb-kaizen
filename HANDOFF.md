@@ -950,3 +950,19 @@ corrió una vez 2026 y también pasó (Brier 0.245949→0.245633; log loss
 0.684965→0.684313). E7 se mantiene como mejora experimental pequeña pero
 consistente; no declara el modelo validado ni rentable. Registro completo:
 `docs/experiments/2026-10-05-e7-opponent-strength.md`.
+
+## 27. E8 — forma reciente point-in-time (2026-10-06)
+
+E8 añadió cuatro índices de los últimos 15 partidos terminados: ofensiva y
+prevención recientes de local y visitante. La ventana se reinicia por equipo al
+comenzar una temporada y se actualiza tras crear cada fila; no incluye marcador
+propio, futuro ni el cierre del año anterior. Fórmula versionada:
+`recent_form_formula_v1`, ficha: `docs/features/recent_form.md`.
+
+El protocolo pre-registró la ventana de 15 y la comparación E3+E7 sobre las
+mismas filas. 2025 habilitó el test único de 2026 al mejorar Brier y log loss.
+Resultados: validación Brier 0.245308→0.244775 / log loss
+0.683621→0.682519; test 2026 Brier 0.245277→0.245110 / log loss
+0.683573→0.683250. Es una mejora incremental pequeña, no validación de
+producción ni demostración de rentabilidad. Registro completo:
+`docs/experiments/2026-10-06-e8-recent-form.md`.

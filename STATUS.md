@@ -1,7 +1,7 @@
 # STATUS.md — MLB KAIZEN checkpoint
 
 fecha: 2026-10-03
-commit: 6b5d312
+commit: a5d54f3
 
 ## Integración de recuperación — 2026-10-03
 
@@ -151,6 +151,23 @@ El detalle y el control equivalente están en
 reciente (ventana móvil), comparada contra E3+E7 en las mismas filas. No tocar
 E6-B hasta tener historial de lineups verificablemente pregame.
 
+## E8 — forma reciente (2026-10-06)
+
+**FACT:** E8 agrega ofensiva y prevención de los últimos 15 partidos de cada
+equipo, sin arrastrar resultados entre temporadas y sin usar el partido propio.
+En 2025 baja Brier de 0.245308 a 0.244775 y log loss de 0.683621 a 0.682519
+frente a E3+E7 en las mismas 2,171 filas. El test único de 2026 repite la
+mejora: Brier 0.245277 a 0.245110 y log loss 0.683573 a 0.683250 (2,055
+partidos).
+
+**INTERPRETACIÓN:** E8 es una segunda señal incremental pequeña y consistente.
+No convierte el modelo en validado para producción ni demuestra rentabilidad.
+Registro: `docs/experiments/2026-10-06-e8-recent-form.md`.
+
+**Próxima acción:** diseñar un experimento point-in-time de días de descanso
+entre partidos, comparado contra E3+E7+E8 sobre las mismas filas. E6-B sigue
+bloqueado hasta contar con lineups históricamente verificables antes del juego.
+
 ## Última verificación
 
 ```text
@@ -184,9 +201,9 @@ sección "Primera evaluación real" arriba sí son sobre partidos MLB reales.
 
 ## Próxima acción recomendada
 
-El siguiente experimento controlado es una ventana de forma reciente
-point-in-time, comparada contra E3+E7. E6-B sigue bloqueado hasta obtener
-lineups históricos con evidencia pregame.
+El siguiente experimento controlado es días de descanso entre partidos,
+comparado contra E3+E7+E8. E6-B sigue bloqueado hasta obtener lineups
+históricos con evidencia pregame.
 
 ```text
 usar probable_pitchers (ya en el dataset, sin usar en features)
