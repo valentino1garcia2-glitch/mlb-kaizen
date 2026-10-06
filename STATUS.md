@@ -262,9 +262,9 @@ recuperar tramos no solapados antes de permitir la captura.
 ## E12-A — Playoffs: protección y viabilidad (2026-10-06)
 
 **FACT:** E3+E7+E8 se entrenó con `game_type: R` (temporada regular). MLB
-reporta playoffs con códigos `F`, `D`, `L` y `W`; se contaron 530 juegos
-finales oficiales entre 2012 y 2025, de los cuales sólo 169 pertenecen al
-corte 2022–2025 actualmente disponible.
+reporta playoffs con códigos `F`, `D`, `L` y `W`; el conteo preliminar fue
+530 juegos. La colección final auditada de E12-B lo actualizó a 547 entre
+2012 y 2025; el corte 2022–2025 previo contenía sólo 169.
 
 **DECISIÓN:** `daily-e11-inference` ahora acepta sólo `R` y bloquea playoffs
 o tipo de juego desconocido. La predicción Dodgers–Braves previa a este guard
@@ -281,15 +281,19 @@ incompatible o IDs duplicados fallan de forma explícita. La primera descarga
 local de 2012 obtuvo 2,961 resultados y expuso tipos adicionales de MLB
 (`A`, `E`, `S`) además de `R` y los de playoffs (`D`, `F`, `L`, `W`).
 
-**INTERPRETACIÓN:** esos tipos adicionales no se pueden incluir por defecto en
-un experimento de temporada regular ni de playoffs. E12 tendrá que declarar
-su filtro antes de construir features. El archivo 2012 es sólo una captura
-parcial de la colección 2012–2025: aún no autoriza entrenamiento, calibración
-ni predicción de playoffs.
+**RESULTADO:** se completó la colección local 2012–2025: 39,346 resultados
+finales, 39,346 IDs únicos, cero marcadores negativos y cero tipos desconocidos
+(SHA-256 `38ff5c24f35f7bce4bb5f7fb16e6368307aeb54c23d97a662da85183c3302b1f`).
+Incluye 32,408 `R` y 547 juegos de playoffs `F/D/L/W`. También conserva `S`,
+`E` y `A`, que no se incluirán por defecto.
 
-**PRÓXIMA ACCIÓN:** completar capturas oficiales 2013–2025, consolidarlas y
-auditar cobertura, tipos, duplicados y hash; entonces pre-registrar el
-experimento E12 separado. Registro:
+**DECISIÓN:** E12 ya tiene datos suficientes para ser diseñado como experimento
+separado, pero no para considerar validado el modelo regular ni para apostar.
+No se entrenó, calibró ni predijo nada en este bloque.
+
+**PRÓXIMA ACCIÓN:** pre-registrar el experimento E12: filtro explícito de
+tipos de playoffs, features que sólo usen resultados anteriores, cortes
+temporales, control y criterio de parada; todavía sin entrenar. Registro:
 `docs/experiments/2026-10-06-e12-historical-collection.md`.
 
 ## Última verificación
