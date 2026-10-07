@@ -129,6 +129,7 @@ def completed_game(
     away_team_id: str = "20",
     home_runs: int = 4,
     away_runs: int = 2,
+    game_type: str | None = None,
 ) -> CompletedGameResult:
     return CompletedGameResult(
         game_id=game_id,
@@ -141,6 +142,7 @@ def completed_game(
         home_runs=home_runs,
         away_runs=away_runs,
         provenance=provenance(),
+        game_type=game_type,
     )
 
 

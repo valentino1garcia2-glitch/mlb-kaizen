@@ -50,6 +50,9 @@ OPPONENT_STRENGTH_FORMULA_VERSION = "opponent_strength_formula_v1"
 #: experiment.  It is a feature-contract choice, not a value tuned on 2026.
 RECENT_FORM_WINDOW = 15
 RECENT_FORM_FORMULA_VERSION = "recent_form_formula_v1"
+POSTSEASON_FORMULA_VERSION = "postseason_e3_e7_e8_formula_v1"
+POSTSEASON_TARGET_GAME_TYPES = frozenset({"F", "D", "L", "W"})
+POSTSEASON_HISTORY_GAME_TYPES = frozenset({"R", *POSTSEASON_TARGET_GAME_TYPES})
 REST_DAYS_FORMULA_VERSION = "rest_days_formula_v1"
 MINIMUM_PRIOR_SITE_GAMES = 5
 SITE_SPLIT_FORMULA_VERSION = "site_split_formula_v1"
@@ -435,6 +438,166 @@ def build_point_in_time_rows_with_opponent_strength_and_recent_form(
         record_recent(game.away_team_id, season, game.away_runs, game.home_runs)
         league_runs += game.home_runs + game.away_runs
         league_games += 2
+
+    return rows
+
+
+def build_postseason_point_in_time_rows(
+    games: list[CompletedGameResult],
+    *,
+    minimum_prior_games: int = MINIMUM_PRIOR_GAMES,
+    minimum_league_games_for_average: int = MINIMUM_LEAGUE_GAMES_FOR_AVERAGE,
+    minimum_prior_matchups: int = 1,
+    recent_form_window: int = RECENT_FORM_WINDOW,
+    home_advantage: float = DEFAULT_HOME_ADVANTAGE,
+) -> list[HistoricalGameRow]:
+    """Build E12 targets using only strictly-prior same-season R/playoff games.
+
+    Only ``F/D/L/W`` games become rows.  Regular-season games provide the
+    October context, and completed earlier playoff games may provide context
+    for later playoff games.  Spring/exhibition/All-Star and unknown types are
+    excluded from both targets and history.  Games sharing a start timestamp
+    are evaluated as one batch, then all added afterwards: no simultaneous
+    result can leak into a target's pregame information set.
+    """
+
+    if minimum_prior_games < 1:
+        raise ValueError("minimum_prior_games must be at least 1")
+    if minimum_league_games_for_average < 1:
+        raise ValueError("minimum_league_games_for_average must be at least 1")
+    if minimum_prior_matchups < 1:
+        raise ValueError("minimum_prior_matchups must be at least 1")
+    if recent_form_window < 1:
+        raise ValueError("recent_form_window must be at least 1")
+
+    def empty_state():
+        return {}, {}, {}, 0, 0
+
+    def schedule_profile(
+        team_id: str,
+        league_average: float,
+        team_totals: dict[str, _TeamAccumulator],
+        opponent_counts: dict[str, dict[str, int]],
+    ) -> tuple[float, float]:
+        opponents = opponent_counts.get(team_id, {})
+        count = sum(opponents.values())
+        if count < minimum_prior_matchups:
+            raise ValueError("insufficient prior opponents for schedule profile")
+        offence = prevention = 0.0
+        for opponent_id, times_faced in opponents.items():
+            opponent = team_totals[opponent_id]
+            offence += times_faced * run_rate_index(
+                opponent.runs_scored / opponent.games_played, league_average
+            )
+            prevention += times_faced * run_rate_index(
+                opponent.runs_allowed / opponent.games_played, league_average
+            )
+        return offence / count, prevention / count
+
+    rows: list[HistoricalGameRow] = []
+    ordered = sorted(
+        (game for game in games if game.game_type in POSTSEASON_HISTORY_GAME_TYPES),
+        key=lambda game: (game.start_time, game.game_id),
+    )
+    active_year: int | None = None
+    team_totals: dict[str, _TeamAccumulator] = {}
+    opponent_counts: dict[str, dict[str, int]] = {}
+    recent_results: dict[str, list[tuple[int, int]]] = {}
+    league_runs = league_games = 0
+    cursor = 0
+
+    while cursor < len(ordered):
+        batch_start = ordered[cursor].start_time
+        batch: list[CompletedGameResult] = []
+        while cursor < len(ordered) and ordered[cursor].start_time == batch_start:
+            batch.append(ordered[cursor])
+            cursor += 1
+
+        # MLB games cannot span seasons in one start-time batch.  A guard
+        # fails loudly rather than accidentally mixing a malformed dataset.
+        years = {game.official_date.year for game in batch}
+        if len(years) != 1:
+            raise ValueError("games with the same start_time span multiple seasons")
+        season = years.pop()
+        if active_year != season:
+            team_totals, opponent_counts, recent_results, league_runs, league_games = empty_state()
+            active_year = season
+
+        for game in batch:
+            if game.game_type not in POSTSEASON_TARGET_GAME_TYPES:
+                continue
+            home = team_totals.get(game.home_team_id, _TeamAccumulator())
+            away = team_totals.get(game.away_team_id, _TeamAccumulator())
+            home_matchups = sum(opponent_counts.get(game.home_team_id, {}).values())
+            away_matchups = sum(opponent_counts.get(game.away_team_id, {}).values())
+            home_recent = recent_results.get(game.home_team_id, [])
+            away_recent = recent_results.get(game.away_team_id, [])
+            eligible = (
+                home.games_played >= minimum_prior_games
+                and away.games_played >= minimum_prior_games
+                and league_games >= minimum_league_games_for_average
+                and home_matchups >= minimum_prior_matchups
+                and away_matchups >= minimum_prior_matchups
+                and len(home_recent) >= recent_form_window
+                and len(away_recent) >= recent_form_window
+            )
+            if not eligible:
+                continue
+            league_average = league_runs / league_games
+            home_opp_offence, home_opp_prevention = schedule_profile(
+                game.home_team_id, league_average, team_totals, opponent_counts
+            )
+            away_opp_offence, away_opp_prevention = schedule_profile(
+                game.away_team_id, league_average, team_totals, opponent_counts
+            )
+            rows.append(HistoricalGameRow(
+                game_id=game.game_id, official_date=game.official_date,
+                prediction_timestamp=game.start_time, feature_timestamp=game.start_time,
+                features={
+                    "home_offensive_index": run_rate_index(home.runs_scored / home.games_played, league_average),
+                    "away_offensive_index": run_rate_index(away.runs_scored / away.games_played, league_average),
+                    "home_run_prevention_index": run_rate_index(home.runs_allowed / home.games_played, league_average),
+                    "away_run_prevention_index": run_rate_index(away.runs_allowed / away.games_played, league_average),
+                    "home_advantage": home_advantage,
+                    "home_opponent_offensive_index": home_opp_offence,
+                    "home_opponent_run_prevention_index": home_opp_prevention,
+                    "away_opponent_offensive_index": away_opp_offence,
+                    "away_opponent_run_prevention_index": away_opp_prevention,
+                    "home_recent_offensive_index": run_rate_index(sum(scored for scored, _ in home_recent) / recent_form_window, league_average),
+                    "home_recent_run_prevention_index": run_rate_index(sum(allowed for _, allowed in home_recent) / recent_form_window, league_average),
+                    "away_recent_offensive_index": run_rate_index(sum(scored for scored, _ in away_recent) / recent_form_window, league_average),
+                    "away_recent_run_prevention_index": run_rate_index(sum(allowed for _, allowed in away_recent) / recent_form_window, league_average),
+                },
+                home_runs=game.home_runs, away_runs=game.away_runs,
+            ))
+
+        # Defer all mutations until each target sharing this start time has
+        # been constructed. This is the strict-before, not <=, E12 contract.
+        for game in batch:
+            home = team_totals.setdefault(game.home_team_id, _TeamAccumulator())
+            away = team_totals.setdefault(game.away_team_id, _TeamAccumulator())
+            home.runs_scored += game.home_runs
+            home.runs_allowed += game.away_runs
+            home.games_played += 1
+            away.runs_scored += game.away_runs
+            away.runs_allowed += game.home_runs
+            away.games_played += 1
+            opponent_counts.setdefault(game.home_team_id, {})[game.away_team_id] = (
+                opponent_counts.setdefault(game.home_team_id, {}).get(game.away_team_id, 0) + 1
+            )
+            opponent_counts.setdefault(game.away_team_id, {})[game.home_team_id] = (
+                opponent_counts.setdefault(game.away_team_id, {}).get(game.home_team_id, 0) + 1
+            )
+            for team_id, scored, allowed in (
+                (game.home_team_id, game.home_runs, game.away_runs),
+                (game.away_team_id, game.away_runs, game.home_runs),
+            ):
+                history = recent_results.setdefault(team_id, [])
+                history.append((scored, allowed))
+                if len(history) > recent_form_window:
+                    history.pop(0)
+            league_runs += game.home_runs + game.away_runs
+            league_games += 2
 
     return rows
 

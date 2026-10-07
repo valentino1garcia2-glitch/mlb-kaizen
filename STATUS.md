@@ -313,6 +313,21 @@ y no permite apuestas ni predicción en vivo.
 no-fuga exactamente bajo este protocolo; todavía sin entrenar. Registro:
 `docs/experiments/2026-10-06-e12-postseason-protocol.md`.
 
+## E12 — Constructor point-in-time (2026-10-06)
+
+**FACT:** `build_postseason_point_in_time_rows` produce objetivos sólo para
+`F/D/L/W` con las 13 features E3+E7+E8. Sólo acumula `R/F/D/L/W` de la misma
+temporada y estrictamente anteriores. Se agrupan juegos con el mismo inicio
+antes de actualizar el historial, impidiendo fuga entre juegos simultáneos.
+
+**VALIDACIÓN:** siete pruebas dirigidas cubren objetivo propio, futuro, tipos
+excluidos, cambio de temporada, orden de features, timestamps y simultaneidad.
+No hay entrenamiento ni métricas E12 todavía.
+
+**PRÓXIMA ACCIÓN:** ejecutar el constructor sobre la colección congelada y
+auditar cuántas filas elegibles genera por temporada antes de entrenar. No se
+ajustan parámetros ni se abre la validación/test en ese paso.
+
 ## Última verificación
 
 ```text

@@ -53,6 +53,9 @@ Opponent strength (E7)       mlb_kaizen/training/build_dataset.py
                              docs/features/opponent_strength.md
 Recent form (E8)             mlb_kaizen/training/build_dataset.py
                              docs/features/recent_form.md
+Postseason rows (E12)         mlb_kaizen/training/build_dataset.py
+                             docs/features/postseason_dataset.md
+                             tests/test_build_dataset_postseason.py
 Daily E3+E7+E8 snapshot      mlb_kaizen/features/e8_daily_snapshot.py
                              docs/features/e8_daily_snapshot.md
 Rest days (E9, negative)     mlb_kaizen/training/build_dataset.py
