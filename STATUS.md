@@ -339,6 +339,20 @@ test (2024–2025). Cada fila tiene las mismas 13 features, sólo objetivos
 **INTERPRETACIÓN:** los datos y el constructor ya no bloquean E12; aún no hay
 ninguna métrica predictiva. La validación y el test permanecen cerrados.
 
+## E12-1 — Validación de playoffs (2026-10-06)
+
+**FACT:** entrenado sólo con 376 playoffs de 2012–2021 y medido sólo con 81
+de 2022–2023. Frente a E12-0 (tasa local constante), E12-1 empeoró Brier de
+0.256567 a 0.259533 y log loss de 0.706349 a 0.713507.
+
+**DECISIÓN:** E12-1 queda descartado bajo la regla pre-registrada. El test
+2024–2025 no fue abierto ni usado en modo alguno. No se reintentará cambiando
+features, parámetros o calibración después de ver esta validación.
+
+**PRÓXIMA ACCIÓN:** mantener bloqueadas las predicciones de playoffs. Cualquier
+nuevo enfoque requerirá una hipótesis independiente y un protocolo nuevo; no
+puede presentarse como continuación o rescate de E12-1.
+
 ## Última verificación
 
 ```text

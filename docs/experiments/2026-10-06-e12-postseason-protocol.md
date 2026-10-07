@@ -107,6 +107,31 @@ La preparación de datos no bloquea E12. Estos números no contienen métricas
 predictivas: no se entrenó el candidato, no se ajustó el control y el tramo
 2024–2025 permanece sin abrir para evaluación.
 
+## Validación E12-1 — RESULTADO (2022–2023 solamente)
+
+Se entrenó exactamente una vez E12-1 con los 376 objetivos de 2012–2021 y
+las 13 features congeladas. E12-0 usó la tasa local del mismo entrenamiento:
+55.5851%. La validación contiene los 81 objetivos de 2022–2023; el test
+2024–2025 no se leyó para métricas.
+
+| Modelo | Brier | Log loss |
+| --- | ---: | ---: |
+| E12-0, tasa local constante | 0.256567 | 0.706349 |
+| E12-1, Poisson E3+E7+E8 | 0.259533 | 0.713507 |
+| Delta E12-1 menos E12-0 | +0.002966 | +0.007157 |
+
+Como contexto no decisorio: el intervalo bootstrap pareado de 95% para el
+delta de Brier fue `[-0.015412, +0.022626]`; la muestra de 81 partidos es
+pequeña. Sin embargo, la regla pre-registrada no permite cambiar el modelo o
+buscar otra variante tras mirar esta validación.
+
+## Decisión
+
+**E12-1 DESCARTADO.** Empeoró Brier y log loss frente al control. En
+consecuencia, el tramo 2024–2025 sigue cerrado: no fue usado para entrenar,
+ajustar, calibrar ni evaluar E12-1. El guard que bloquea predicciones de
+playoffs con el modelo regular continúa vigente.
+
 ## Resultado esperado de este bloque
 
 El siguiente bloque implementará sólo el constructor de filas E12 y sus
