@@ -71,6 +71,8 @@ League average definition    docs/features/league_average.md
 Odds conversion/no-vig/EV/Kelly
                              mlb_kaizen/market/odds.py
                              tests/test_odds.py
+Manual quote capture          mlb_kaizen/interface/cli.py (`record-market-quote`)
+                             docs/manual-market-quotes.md
 Baseline transparent runs    mlb_kaizen/models/baseline.py
                              tests/test_baseline_and_simulation.py
 Monte Carlo                  mlb_kaizen/simulation/monte_carlo.py

@@ -8,6 +8,16 @@ from mlb_kaizen.interface.cli import build_parser
 
 
 class AnalyzeCommandTests(unittest.TestCase):
+    def test_manual_market_quote_requires_observed_timestamp_and_one_price_format(self) -> None:
+        args = build_parser().parse_args([
+            "record-market-quote", "--game-id", "mlb:123", "--sportsbook", "Playdoit",
+            "--market", "moneyline", "--selection", "away", "--american-odds", "+120",
+            "--observed-at", "2026-10-07T01:25:00+00:00",
+        ])
+        self.assertEqual(args.game_id, "mlb:123")
+        self.assertEqual(args.american_odds, 120.0)
+        self.assertIsNone(args.decimal_odds)
+
     def test_analyze_accepts_explicit_trained_model_and_calibrator_paths(self) -> None:
         args = build_parser().parse_args(
             [

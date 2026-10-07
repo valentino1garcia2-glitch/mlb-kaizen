@@ -353,6 +353,25 @@ features, parámetros o calibración después de ver esta validación.
 nuevo enfoque requerirá una hipótesis independiente y un protocolo nuevo; no
 puede presentarse como continuación o rescate de E12-1.
 
+## Captura manual de cuotas (2026-10-06)
+
+Se agregó `record-market-quote`, que conserva cada cuota manual con casa,
+mercado, selección, línea, precio y hora observada con zona horaria. La primera
+captura registrada fue Playdoit para Brewers @ Padres (`mlb:849826`), observada
+a las 2026-10-07T01:25:00+00:00: moneyline Brewers +120 / Padres -150, total
+7.5 (over -110 / under -115) y run line Brewers +1.5 -191 / Padres -1.5 +150.
+
+**FACT:** son seis observaciones de mercado pregame guardadas de forma
+append-only. **INTERPRETACIÓN:** sirven para futura auditoría de movimiento y
+CLV si se registra también una última cuota antes del inicio y luego el
+resultado. **NO SON** una predicción ni una recomendación: el artefacto E11 no
+se ejecuta para este juego porque MLB lo clasifica como playoffs (`game_type D`)
+y E12 fue descartado en validación.
+
+**PRÓXIMA ACCIÓN:** si existió una cuota vista antes del inicio, registrarla con
+su hora real como observación adicional; después registrar el marcador oficial.
+No etiquetar una observación posterior al inicio como “cierre pregame”.
+
 ## Última verificación
 
 ```text

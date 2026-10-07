@@ -25,6 +25,7 @@ from mlb_kaizen.domain.models import (
 )
 from mlb_kaizen.features.run_profile import compute_team_run_profile
 from mlb_kaizen.features.e8_daily_snapshot import build_e8_daily_feature_snapshot
+from mlb_kaizen.market.odds import american_to_decimal
 from mlb_kaizen.observability.logging import configure_logging
 from mlb_kaizen.reporting.html import render_analysis_html, render_leaderboard_html
 from mlb_kaizen.reporting.text import render_analysis_report
@@ -171,6 +172,22 @@ def build_parser() -> argparse.ArgumentParser:
     run_profile.add_argument("--season", required=True)
     odds = subcommands.add_parser("odds", help="retrieve and persist sportsbook market snapshots")
     odds.add_argument("--game-id", required=True)
+    manual_odds = subcommands.add_parser(
+        "record-market-quote", help="append one manually observed sportsbook quote"
+    )
+    manual_odds.add_argument("--game-id", required=True)
+    manual_odds.add_argument("--sportsbook", required=True)
+    manual_odds.add_argument("--market", required=True, choices=("moneyline", "total", "run_line"))
+    manual_odds.add_argument("--selection", required=True)
+    manual_odds.add_argument("--line", type=float)
+    price = manual_odds.add_mutually_exclusive_group(required=True)
+    price.add_argument("--decimal-odds", type=float)
+    price.add_argument("--american-odds", type=float)
+    manual_odds.add_argument(
+        "--observed-at", required=True, type=_parse_timestamp,
+        help="when this exact quote was visible, with UTC offset",
+    )
+    manual_odds.add_argument("--source", default="manual")
     weather = subcommands.add_parser("weather", help="retrieve and persist a point-in-time forecast")
     weather.add_argument("--game-id", required=True)
     weather.add_argument("--venue-id", required=True)
@@ -444,6 +461,39 @@ def main(argv: list[str] | None = None) -> int:
                 payload={"american_odds": quote.american_odds, "provider_event_id": quote.provider_event_id},
             )
         print(f"Persisted {len(quotes)} market quotes for {args.game_id}.")
+        return 0
+    if args.command == "record-market-quote":
+        valid_selections = {
+            "moneyline": {"home", "away"},
+            "total": {"over", "under"},
+            "run_line": {"home", "away"},
+        }
+        if args.selection not in valid_selections[args.market]:
+            print(f"Invalid selection for {args.market}: {args.selection}")
+            return 2
+        if args.market in {"total", "run_line"} and args.line is None:
+            print(f"--line is required for {args.market}")
+            return 2
+        decimal_odds = args.decimal_odds
+        try:
+            if decimal_odds is None:
+                decimal_odds = american_to_decimal(args.american_odds)
+            if decimal_odds <= 1:
+                raise ValueError("decimal odds must exceed 1")
+        except ValueError as exc:
+            print(f"Input rejected: {exc}")
+            return 2
+        database.initialise()
+        quote_id = database.store_market_quote(
+            game_id=args.game_id, sportsbook=args.sportsbook, market=args.market,
+            selection=args.selection, line=args.line, decimal_odds=decimal_odds,
+            captured_at=args.observed_at, source=args.source,
+            payload={
+                "entry_method": "manual", "american_odds": args.american_odds,
+                "observed_at": args.observed_at.isoformat(),
+            },
+        )
+        print(f"Recorded market quote: {quote_id}")
         return 0
     if args.command == "weather":
         provider = MLBStatsProvider(_http_client(settings))

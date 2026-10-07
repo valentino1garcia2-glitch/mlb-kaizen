@@ -77,6 +77,23 @@ auditar la separación entre temporada regular y playoffs antes de E12.
 
 ---
 
+## DD-020 — Las cuotas manuales son observaciones fechadas, no precios inferidos
+
+`record-market-quote` requiere un `observed_at` con zona horaria y agrega cada
+captura a `market_quotes` sin modificar registros previos. El timestamp acredita
+cuándo el usuario vio el precio; no lo llama apertura ni cierre sin evidencia
+temporal adicional. El precio americano original se conserva junto con su
+equivalente decimal.
+
+**Razón:** CLV y movimiento de mercado no se pueden reconstruir si una línea
+posterior reemplaza la anterior o si se confunde la hora de captura con una
+etiqueta de apertura/cierre. Una cuota observada tampoco es una predicción ni
+una recomendación.
+
+**Status:** LOCKED
+
+---
+
 **ID:** DD-001
 **Decisión:** Todo registro que puede representar una ausencia de dato
 (`ProbablePitcher`, `GameLineups`, `GameWeather`) lleva `provenance`

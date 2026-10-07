@@ -87,6 +87,40 @@ class DatabaseTests(unittest.TestCase):
             count = database.team_season_stat_count()
         self.assertEqual(count, 1)
 
+    def test_manual_market_quotes_are_append_only(self) -> None:
+        """Two observations of one market must remain two historical records."""
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
+            database.initialise()
+            first_quote_id = database.store_market_quote(
+                game_id="mlb:1",
+                sportsbook="Playdoit",
+                market="moneyline",
+                selection="away",
+                decimal_odds=2.2,
+                captured_at=datetime(2026, 10, 7, 1, 25, tzinfo=UTC),
+                source="manual",
+                payload={"entry_method": "manual", "american_odds": 120},
+            )
+            second_quote_id = database.store_market_quote(
+                game_id="mlb:1",
+                sportsbook="Playdoit",
+                market="moneyline",
+                selection="away",
+                decimal_odds=2.1,
+                captured_at=datetime(2026, 10, 7, 1, 29, tzinfo=UTC),
+                source="manual",
+                payload={"entry_method": "manual", "american_odds": 110},
+            )
+            with database._connection() as connection:
+                count = connection.execute(
+                    "SELECT COUNT(1) FROM market_quotes WHERE game_id = ?", ("mlb:1",)
+                ).fetchone()[0]
+
+        self.assertNotEqual(first_quote_id, second_quote_id)
+        self.assertEqual(count, 2)
+
 
 # Fase 4.5 tracking and derived-feature persistence
 class DatabaseAnalystTests(unittest.TestCase):
