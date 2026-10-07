@@ -62,7 +62,7 @@ def main() -> int:
     commit = current_commit()
 
     if CHECKPOINT_PATH.exists():
-        data = json.loads(CHECKPOINT_PATH.read_text())
+        data = json.loads(CHECKPOINT_PATH.read_text(encoding="utf-8"))
     else:
         data = {}
 
@@ -72,13 +72,13 @@ def main() -> int:
     data["last_verified_commit"] = commit
 
     CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    CHECKPOINT_PATH.write_text(json.dumps(data, indent=2) + "\n")
+    CHECKPOINT_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
     if STATUS_PATH.exists():
-        status_text = STATUS_PATH.read_text()
+        status_text = STATUS_PATH.read_text(encoding="utf-8")
         status_text = re.sub(r"(?m)^commit: .*$", f"commit: {commit or '(no commits)'}", status_text)
         status_text = re.sub(r"(?m)^```\n\d+ / \d+ PASS\n```", f"```\n{passed} / {total} PASS\n```", status_text)
-        STATUS_PATH.write_text(status_text)
+        STATUS_PATH.write_text(status_text, encoding="utf-8")
 
     print(f"tests: {passed}/{total}  commit: {commit or '(no commits)'}")
     print("Phase status, blockers and next_action were NOT changed -- edit them explicitly if they changed.")
