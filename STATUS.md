@@ -324,9 +324,20 @@ antes de actualizar el historial, impidiendo fuga entre juegos simultáneos.
 excluidos, cambio de temporada, orden de features, timestamps y simultaneidad.
 No hay entrenamiento ni métricas E12 todavía.
 
-**PRÓXIMA ACCIÓN:** ejecutar el constructor sobre la colección congelada y
-auditar cuántas filas elegibles genera por temporada antes de entrenar. No se
-ajustan parámetros ni se abre la validación/test en ese paso.
+**PRÓXIMA ACCIÓN:** entrenar E12-1 sólo con 2012–2021 y medirlo contra E12-0
+sólo en 2022–2023. Abrir 2024–2025 únicamente si cumple la regla de mejora
+doble pre-registrada.
+
+## E12 — Auditoría de filas (2026-10-06)
+
+**FACT:** el constructor se ejecutó sobre los 547 playoffs congelados:
+produjo 547/547 filas elegibles, sin omisiones. El reparto fijado es 376 para
+entrenamiento futuro (2012–2021), 81 para validación (2022–2023) y 90 para
+test (2024–2025). Cada fila tiene las mismas 13 features, sólo objetivos
+`F/D/L/W` y timestamps temporales válidos.
+
+**INTERPRETACIÓN:** los datos y el constructor ya no bloquean E12; aún no hay
+ninguna métrica predictiva. La validación y el test permanecen cerrados.
 
 ## Última verificación
 

@@ -80,6 +80,33 @@ las mejora, se clasifica sólo como `EXPLORATORY`: el test esperado es pequeño
 (aprox. 90 juegos) y no autoriza predicciones en vivo, apuestas ni un
 calibrador adicional.
 
+## Auditoría de filas — FACT (sin entrenamiento)
+
+Se ejecutó `build_postseason_point_in_time_rows` sobre la fuente congelada
+con el hash indicado arriba. Resultado:
+
+| Tramo | Objetivos playoffs | Filas elegibles | Omitidas |
+| --- | ---: | ---: | ---: |
+| 2012–2021 (entrenamiento futuro) | 376 | 376 | 0 |
+| 2022–2023 (validación futura) | 81 | 81 | 0 |
+| 2024–2025 (test futuro) | 90 | 90 | 0 |
+| Total | 547 | 547 | 0 |
+
+Por temporada, los objetivos y filas coinciden: 2012 37, 2013 38, 2014 32,
+2015 36, 2016 35, 2017 38, 2018 33, 2019 37, 2020 53, 2021 37, 2022 40,
+2023 41, 2024 43 y 2025 47.
+
+Controles de integridad: cada fila tiene exactamente 13 features en el mismo
+orden; 0 filas pertenecen a tipos fuera de `F/D/L/W`; y todas cumplen
+`feature_timestamp <= prediction_timestamp`. La validación futura tiene 81
+filas, por encima del mínimo pre-registrado de 50.
+
+## Interpretación
+
+La preparación de datos no bloquea E12. Estos números no contienen métricas
+predictivas: no se entrenó el candidato, no se ajustó el control y el tramo
+2024–2025 permanece sin abrir para evaluación.
+
 ## Resultado esperado de este bloque
 
 El siguiente bloque implementará sólo el constructor de filas E12 y sus
