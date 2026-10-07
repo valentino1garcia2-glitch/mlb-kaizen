@@ -296,6 +296,23 @@ tipos de playoffs, features que sólo usen resultados anteriores, cortes
 temporales, control y criterio de parada; todavía sin entrenar. Registro:
 `docs/experiments/2026-10-06-e12-historical-collection.md`.
 
+## E12 — Protocolo de playoffs pre-registrado (2026-10-06)
+
+**FACT:** E12 usará como objetivos exclusivamente playoffs `F/D/L/W` de
+2012–2025. Comparará un Poisson E3+E7+E8 de 13 señales estrictamente previas
+contra una tasa constante de victoria local. Entrenamiento: 2012–2021;
+validación: 2022–2023; test único: 2024–2025. No reutiliza Platt E11,
+lineups, pitchers, cuotas ni búsqueda de parámetros.
+
+**REGLA:** si no mejora Brier y log loss simultáneamente en 2022–2023, E12 se
+descarta sin abrir 2024–2025. Si pasa y no repite ambas mejoras en el test,
+también se descarta. Aun con éxito sólo sería exploratorio: el test es pequeño
+y no permite apuestas ni predicción en vivo.
+
+**PRÓXIMA ACCIÓN:** implementar el constructor de filas E12 y las pruebas de
+no-fuga exactamente bajo este protocolo; todavía sin entrenar. Registro:
+`docs/experiments/2026-10-06-e12-postseason-protocol.md`.
+
 ## Última verificación
 
 ```text

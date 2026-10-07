@@ -32,7 +32,7 @@
     "CLV requires reliable opening/closing market snapshots",
     "current features (run rates only) show no measurable edge over a naive constant-home-win-rate baseline -- see data/evaluation/first_real_evaluation_2026-09-19.md"
   ],
-  "next_action": "pre-register the separate E12 postseason experiment using the audited 2012-2025 official collection: explicit playoff type filter, strictly-prior features, temporal splits, control and stopping criterion; do not train until that protocol is committed; E6-B remains blocked until historical/prospective lineup snapshots prove retrieved_at before game_start_time",
+  "next_action": "implement the E12 postseason point-in-time row builder and its no-leakage tests exactly as pre-registered; do not train, tune or recalibrate until the builder is verified; E6-B remains blocked until historical/prospective lineup snapshots prove retrieved_at before game_start_time",
   "analyst_mode": "DONE",
   "engineering_status": "8/8 phase deliverables implemented; external evidence gates remain",
   "empirical_validation": "E3_E7_E8_PLUS_MATCHED_TEMPORAL_PLATT_MODEST_OOS_IMPROVEMENT_NOT_PRODUCTION_VALIDATED",
