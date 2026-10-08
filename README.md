@@ -52,6 +52,14 @@ python3 -m unittest discover -s tests -t . -v
 python3 scripts/verify.py
 ```
 
+## Interfaz visual en Google Colab
+
+Para uso sin PowerShell, abre
+[`notebooks/MLB_KAIZEN_Control_Center.ipynb`](notebooks/MLB_KAIZEN_Control_Center.ipynb)
+en Google Colab. El Control Center conserva tus datos en Google Drive y ofrece
+calendario, selector de juego, formulario de cuotas, historial gráfico y
+registro de resultados. Instrucciones: [docs/colab-control-center.md](docs/colab-control-center.md).
+
 ## Estado
 
 El estado operativo se encuentra en `STATUS.md`. Para recuperación después de una ventana de contexto,

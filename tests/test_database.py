@@ -117,9 +117,19 @@ class DatabaseTests(unittest.TestCase):
                 count = connection.execute(
                     "SELECT COUNT(1) FROM market_quotes WHERE game_id = ?", ("mlb:1",)
                 ).fetchone()[0]
+            quotes = database.market_quotes_for_game("mlb:1")
 
         self.assertNotEqual(first_quote_id, second_quote_id)
         self.assertEqual(count, 2)
+        self.assertEqual([quote["quote_id"] for quote in quotes], [first_quote_id, second_quote_id])
+        self.assertEqual(quotes[0]["payload"]["american_odds"], 120)
+
+    def test_market_quote_history_rejects_missing_game_identifier(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
+            database.initialise()
+            with self.assertRaisesRegex(ValueError, "game_id is required"):
+                database.market_quotes_for_game("")
 
 
 # Fase 4.5 tracking and derived-feature persistence

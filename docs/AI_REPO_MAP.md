@@ -73,6 +73,8 @@ Odds conversion/no-vig/EV/Kelly
                              tests/test_odds.py
 Manual quote capture          mlb_kaizen/interface/cli.py (`record-market-quote`)
                              docs/manual-market-quotes.md
+Control Center visual (Colab) notebooks/MLB_KAIZEN_Control_Center.ipynb
+                             docs/colab-control-center.md
 Baseline transparent runs    mlb_kaizen/models/baseline.py
                              tests/test_baseline_and_simulation.py
 Monte Carlo                  mlb_kaizen/simulation/monte_carlo.py

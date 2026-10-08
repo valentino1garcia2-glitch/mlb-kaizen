@@ -94,6 +94,23 @@ una recomendación.
 
 ---
 
+## DD-021 — El Control Center de Colab separa código efímero y datos persistentes
+
+El notebook visual obtiene el código desde GitHub en cada sesión de Colab y
+guarda base SQLite, caché y artefactos locales bajo `MyDrive/MLB_KAIZEN/`. La
+interfaz usa los mismos contratos de calendario, cuotas, resultados e
+inferencia del paquete; no mantiene una segunda lógica paralela en el
+notebook.
+
+**Razón:** la máquina de Colab puede desaparecer al cerrar o expirar la sesión.
+Separar el código versionado de los datos del usuario permite actualizar el
+Control Center sin perder capturas históricas, a la vez que conserva un flujo
+visual para quien no usa PowerShell.
+
+**Status:** LOCKED
+
+---
+
 **ID:** DD-001
 **Decisión:** Todo registro que puede representar una ausencia de dato
 (`ProbablePitcher`, `GameLineups`, `GameWeather`) lleva `provenance`

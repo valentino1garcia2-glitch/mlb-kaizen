@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from mlb_kaizen.domain.models import AvailabilityStatus, DataProvenance, Game
-from mlb_kaizen.interface.cli import _run_daily_e11_inference
+from mlb_kaizen.interface.cli import run_daily_e11_inference
 from mlb_kaizen.storage.database import KaizenDatabase
 
 from .conftest import completed_game
@@ -61,7 +61,7 @@ class DailyE11InferenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory:
             database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
             with patch("mlb_kaizen.interface.cli.load_e11_inference_artifact", return_value=(fake_artifact, fake_metadata)):
-                result = _run_daily_e11_inference(
+                result = run_daily_e11_inference(
                     provider=_Provider(game, history), database=database,
                     game_date=date(2026, 10, 20), game_id="mlb:target",
                     history_start=date(2022, 3, 1), artifact_path=Path("trusted/e11"),
@@ -77,7 +77,7 @@ class DailyE11InferenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory:
             database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
             with self.assertRaisesRegex(ValueError, "not present"):
-                _run_daily_e11_inference(
+                run_daily_e11_inference(
                     provider=_Provider(game, history), database=database,
                     game_date=date(2026, 10, 20), game_id="mlb:missing",
                     history_start=date(2022, 3, 1), artifact_path=Path("trusted/e11"),
@@ -106,7 +106,7 @@ class DailyE11InferenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory:
             database = KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3")
             with patch("mlb_kaizen.interface.cli.load_e11_inference_artifact", return_value=(artifact, metadata)):
-                result = _run_daily_e11_inference(
+                result = run_daily_e11_inference(
                     provider=_Provider(game, history), database=database,
                     game_date=start.date(), game_id="mlb:future", history_start=date(2022, 3, 1),
                     artifact_path=Path("trusted/e11"),
@@ -123,7 +123,7 @@ class DailyE11InferenceTests(unittest.TestCase):
         )
         with tempfile.TemporaryDirectory() as temporary_directory:
             with self.assertRaisesRegex(ValueError, "regular-season games only"):
-                _run_daily_e11_inference(
+                run_daily_e11_inference(
                     provider=_Provider(postseason, history),
                     database=KaizenDatabase(Path(temporary_directory) / "kaizen.sqlite3"),
                     game_date=postseason.official_date, game_id=postseason.game_id,

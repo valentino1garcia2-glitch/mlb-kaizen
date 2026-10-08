@@ -372,6 +372,25 @@ y E12 fue descartado en validación.
 su hora real como observación adicional; después registrar el marcador oficial.
 No etiquetar una observación posterior al inicio como “cierre pregame”.
 
+## Control Center visual en Google Colab (2026-10-08)
+
+Se agregó `notebooks/MLB_KAIZEN_Control_Center.ipynb`, una interfaz visual que
+reutiliza el motor existente sin exigir PowerShell al usuario. Monta Google
+Drive, descarga el código versionado de GitHub y guarda la base SQLite, caché
+y artefactos en `MyDrive/MLB_KAIZEN/`.
+
+**FACT:** permite actualizar calendario, elegir juego, guardar cuotas manuales
+append-only, ver tabla/gráfica de capturas y registrar resultado final. Expone
+E11 sólo para un juego `game_type=R`, con artefacto confiable existente y antes
+del inicio; playoffs se rechazan. **INTERPRETACIÓN:** reduce el trabajo manual
+de comandos sin alterar los límites de evidencia del modelo. **HIPÓTESIS:**
+la interfaz facilitará construir suficientes snapshots de mercado para un
+análisis futuro de CLV, pero no prueba rentabilidad.
+
+**PRÓXIMA ACCIÓN:** abrir el notebook desde GitHub en Google Colab, ejecutar
+sus dos primeras celdas y confirmar que Drive crea `MLB_KAIZEN/data`. Luego,
+para un partido futuro, probar calendario y una captura visual de cuota.
+
 ## Última verificación
 
 ```text

@@ -200,6 +200,36 @@ class KaizenDatabase:
             )
         return quote_id
 
+    def market_quotes_for_game(self, game_id: str) -> list[dict[str, Any]]:
+        """Return immutable market observations for one game in capture order."""
+
+        if not game_id:
+            raise ValueError("game_id is required")
+        with self._connection() as connection:
+            rows = connection.execute(
+                """SELECT quote_id, game_id, sportsbook, market, selection, line,
+                          decimal_odds, captured_at, source, payload_json
+                     FROM market_quotes
+                     WHERE game_id = ?
+                     ORDER BY captured_at ASC, quote_id ASC""",
+                (game_id,),
+            ).fetchall()
+        return [
+            {
+                "quote_id": row["quote_id"],
+                "game_id": row["game_id"],
+                "sportsbook": row["sportsbook"],
+                "market": row["market"],
+                "selection": row["selection"],
+                "line": row["line"],
+                "decimal_odds": row["decimal_odds"],
+                "captured_at": row["captured_at"],
+                "source": row["source"],
+                "payload": json.loads(row["payload_json"]),
+            }
+            for row in rows
+        ]
+
     def prediction_count(self) -> int:
         """Return the number of immutable prediction records."""
 

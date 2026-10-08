@@ -275,7 +275,7 @@ def _http_client(settings: Settings) -> CachedHttpClient:
     )
 
 
-def _run_daily_e11_inference(
+def run_daily_e11_inference(
     *,
     provider: MLBStatsProvider,
     database: KaizenDatabase,
@@ -349,6 +349,11 @@ def _run_daily_e11_inference(
         "away_expected_runs": prediction.run_prediction.away_expected_runs,
         "note": "Experimental model output; not evidence of betting profitability.",
     }
+
+
+# Kept for compatibility with existing callers while the visual Control Center
+# imports the public name above instead of relying on a private CLI helper.
+_run_daily_e11_inference = run_daily_e11_inference
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -635,7 +640,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Inference rejected: {exc}"); return 2
     if args.command == "daily-e11-inference":
         try:
-            output = _run_daily_e11_inference(
+            output = run_daily_e11_inference(
                 provider=MLBStatsProvider(_http_client(settings)),
                 database=database,
                 game_date=args.date,
