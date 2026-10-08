@@ -7,6 +7,26 @@ probability ``p``, expected value per unit risked is ``p * (d - 1) - (1 - p)``.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import dataclass
+from datetime import datetime
+
+
+_TWO_SIDED_MARKET_SELECTIONS = {
+    "moneyline": frozenset(("home", "away")),
+    "total": frozenset(("over", "under")),
+    "run_line": frozenset(("home", "away")),
+}
+
+
+@dataclass(frozen=True, slots=True)
+class NoVigMarketSnapshot:
+    """One unambiguous two-sided bookmaker observation with vig removed."""
+
+    sportsbook: str
+    market: str
+    line: float | None
+    observed_at: datetime
+    probabilities: Mapping[str, float]
 
 
 def _validate_probability(probability: float) -> None:
@@ -45,6 +65,67 @@ def proportional_no_vig(decimal_prices: Mapping[str, float]) -> dict[str, float]
     if overround <= 0:
         raise ValueError("invalid market overround")
     return {selection: probability / overround for selection, probability in implied.items()}
+
+
+def latest_complete_no_vig_snapshot(
+    quotes: list[Mapping[str, object]] | tuple[Mapping[str, object], ...], *, market: str
+) -> NoVigMarketSnapshot | None:
+    """Return the newest exact-time, two-sided market reference, or ``None``.
+
+    Quotes are intentionally not mixed across observation times, sportsbooks or
+    lines.  A complete pair proves only what that bookmaker implied at that
+    instant after proportional vig removal; it is not a model prediction.
+    """
+
+    expected_selections = _TWO_SIDED_MARKET_SELECTIONS.get(market)
+    if expected_selections is None:
+        raise ValueError(f"unsupported two-sided market: {market!r}")
+
+    grouped: dict[tuple[str, float | None, datetime], list[Mapping[str, object]]] = {}
+    for quote in quotes:
+        if quote.get("market") != market:
+            continue
+        observed_at_raw = quote.get("captured_at")
+        if not isinstance(observed_at_raw, str):
+            continue
+        try:
+            observed_at = datetime.fromisoformat(observed_at_raw.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if observed_at.tzinfo is None or observed_at.utcoffset() is None:
+            continue
+        sportsbook = quote.get("sportsbook")
+        if not isinstance(sportsbook, str) or not sportsbook:
+            continue
+        raw_line = quote.get("line")
+        try:
+            line = float(raw_line) if raw_line is not None else None
+        except (TypeError, ValueError):
+            continue
+        grouped.setdefault((sportsbook, line, observed_at), []).append(quote)
+
+    complete: list[NoVigMarketSnapshot] = []
+    for (sportsbook, line, observed_at), group in grouped.items():
+        selections = [quote.get("selection") for quote in group]
+        if len(group) != len(expected_selections) or frozenset(selections) != expected_selections:
+            continue
+        try:
+            decimal_prices = {
+                str(quote["selection"]): float(quote["decimal_odds"])
+                for quote in group
+            }
+            probabilities = proportional_no_vig(decimal_prices)
+        except (KeyError, TypeError, ValueError):
+            continue
+        complete.append(NoVigMarketSnapshot(
+            sportsbook=sportsbook,
+            market=market,
+            line=line,
+            observed_at=observed_at,
+            probabilities=probabilities,
+        ))
+
+    return max(complete, key=lambda snapshot: snapshot.observed_at) if complete else None
 
 
 def edge(model_probability: float, market_probability: float) -> float:

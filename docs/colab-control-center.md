@@ -25,6 +25,8 @@ que sobreviven al cierre de la sesión de Colab.
 - Convierte momios americanos y registra cada cuota visible sin sobrescribir
   capturas anteriores.
 - Muestra una tabla y gráfica de las cuotas capturadas del juego elegido.
+- En playoffs, muestra la probabilidad que implica el mercado sin margen sólo
+  si ambos lados de una misma casa, mercado, línea y hora están capturados.
 - Guarda un marcador final que el usuario confirme como oficial.
 
 ## Límites intencionales
@@ -37,3 +39,12 @@ que sobreviven al cierre de la sesión de Colab.
   sustituto y bloquea playoffs.
 - La interfaz no transforma una probabilidad, una gráfica de cuotas ni una
   diferencia contra el mercado en recomendación o prueba de rentabilidad.
+
+## Pestaña de playoffs
+
+La pestaña **Playoffs / mercado** no desbloquea el modelo E11 ni crea un modelo
+de playoffs. Muestra una *referencia de mercado sin margen proporcional*: toma
+los dos precios opuestos de una misma observación y normaliza sus probabilidades
+implícitas para que sumen 100%. Si falta un lado, si la hora no coincide o si
+las líneas pertenecen a distintos mercados, no calcula un porcentaje; mezclar
+capturas sería inventar una referencia que no existió.

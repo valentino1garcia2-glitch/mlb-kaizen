@@ -391,6 +391,23 @@ análisis futuro de CLV, pero no prueba rentabilidad.
 sus dos primeras celdas y confirmar que Drive crea `MLB_KAIZEN/data`. Luego,
 para un partido futuro, probar calendario y una captura visual de cuota.
 
+## Seguimiento de playoffs: referencia de mercado (2026-10-08)
+
+El Control Center ahora incluye la pestaña **Playoffs / mercado**. A partir de
+dos precios opuestos capturados con la misma casa, mercado, línea y hora vista,
+calcula y grafica la probabilidad implícita sin margen proporcional. Si las
+capturas no son una pareja exacta, no muestra porcentaje.
+
+**FACT:** no se desbloqueó E11 ni se reentrenó E12; los playoffs permanecen
+bloqueados para predicción de modelo. **INTERPRETACIÓN:** el usuario puede ver
+un porcentaje verificable que resume el mercado, etiquetado como referencia y
+no como modelo. **HIPÓTESIS:** las capturas sistemáticas de esta postemporada
+permitirán evaluar movimiento de líneas/CLV en el futuro, sin rescatar E12-1.
+
+**PRÓXIMA ACCIÓN:** en Colab, capturar ambos lados de un mercado usando la
+misma hora visible, abrir la pestaña Playoffs / mercado y confirmar la
+referencia. Tras el juego, guardar sólo el resultado oficial.
+
 ## Última verificación
 
 ```text

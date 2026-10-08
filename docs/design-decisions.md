@@ -111,6 +111,22 @@ visual para quien no usa PowerShell.
 
 ---
 
+## DD-022 — La referencia de playoffs sólo usa un par completo de mercado
+
+La pestaña **Playoffs / mercado** calcula probabilidades sin margen únicamente
+cuando encuentra los dos lados opuestos de un mismo mercado, casa, línea y
+`observed_at`. Nunca combina, por ejemplo, un momio de las 18:00 con su opuesto
+de las 19:00; si no existe un par inequívoco, muestra que falta información.
+
+**Razón:** mezclar movimientos de precio de momentos distintos fabricaría una
+probabilidad de mercado que ninguna casa publicó. El resultado es una
+referencia descriptiva del mercado, no una predicción de MLB KAIZEN ni una
+recomendación.
+
+**Status:** LOCKED
+
+---
+
 **ID:** DD-001
 **Decisión:** Todo registro que puede representar una ausencia de dato
 (`ProbablePitcher`, `GameLineups`, `GameWeather`) lleva `provenance`

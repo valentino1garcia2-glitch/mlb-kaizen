@@ -71,6 +71,7 @@ League average definition    docs/features/league_average.md
 Odds conversion/no-vig/EV/Kelly
                              mlb_kaizen/market/odds.py
                              tests/test_odds.py
+Paired no-vig market snapshot mlb_kaizen/market/odds.py
 Manual quote capture          mlb_kaizen/interface/cli.py (`record-market-quote`)
                              docs/manual-market-quotes.md
 Control Center visual (Colab) notebooks/MLB_KAIZEN_Control_Center.ipynb
