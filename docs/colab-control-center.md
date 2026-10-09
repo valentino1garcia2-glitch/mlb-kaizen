@@ -13,6 +13,10 @@ clases de calendario, almacenamiento append-only, cuotas y resultado final.
 3. Ejecuta la celda **Control Center**. No necesitas instalar Python, Git ni
    abrir PowerShell.
 
+Cuando el notebook reciba una actualización, vuelve a ejecutar primero la
+celda de preparación y después la celda **Control Center**. La primera muestra
+el commit descargado y limpia módulos viejos de la memoria de Colab.
+
 El código se descarga desde GitHub en la máquina temporal de Colab. Las cuotas,
 resultados, caché y artefactos se guardan bajo `MyDrive/MLB_KAIZEN/`, de modo
 que sobreviven al cierre de la sesión de Colab.
